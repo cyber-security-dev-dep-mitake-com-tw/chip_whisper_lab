@@ -1,50 +1,28 @@
 from __future__ import annotations
 
-import secrets
 from contextlib import asynccontextmanager
-from typing import Annotated
 
 import uvicorn
-from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import Settings, get_settings
-from .schemas import (
-    CapturePreview,
-    CaptureRequest,
-    DeviceSummary,
-    DoctorReport,
-    ExecutionRequest,
-    ExecutionResult,
-)
-from .services.devices import DeviceService
-from .services.doctor import build_doctor_report
-from .services.execution import ExecutionDisabledError, ExecutionService
-
-
-def require_local_token(
-    x_whisperlab_token: Annotated[str | None, Header()] = None,
-    settings: Settings = Depends(get_settings),
-) -> None:
-    if not settings.token:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Server token is not configured.",
-        )
-    if not x_whisperlab_token or not secrets.compare_digest(x_whisperlab_token, settings.token):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid local session token.",
-        )
+from .api.attacks import router as attacks_router
+from .api.experiments import router as experiments_router
+from .api.reports import router as reports_router
+from .api.targets import router as targets_router
+from .api.traces import router as traces_router
+from .config import get_settings
+from .db import Base, get_engine
+from .schemas import HealthResponse
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings = get_settings()
-    settings.workspace_root.mkdir(parents=True, exist_ok=True)
-    settings.data_root.mkdir(parents=True, exist_ok=True)
-    app.state.settings = settings
+    engine = get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     yield
+    await engine.dispose()
 
 
 def create_app() -> FastAPI:
@@ -58,51 +36,21 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://127.0.0.1:3000", "http://localhost:3000"],
-        allow_credentials=False,
-        allow_methods=["GET", "POST"],
-        allow_headers=["Content-Type", "X-WhisperLab-Token"],
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
-    @app.get("/api/v1/health")
-    async def health() -> dict[str, str | bool]:
-        return {
-            "status": "ok",
-            "simulation": settings.simulation,
-            "execution_enabled": settings.enable_execution,
-        }
+    app.include_router(experiments_router, prefix="/api/v1/experiments", tags=["experiments"])
+    app.include_router(traces_router, prefix="/api/v1/traces", tags=["traces"])
+    app.include_router(attacks_router, prefix="/api/v1/attacks", tags=["attacks"])
+    app.include_router(targets_router, prefix="/api/v1/targets", tags=["targets"])
+    app.include_router(reports_router, prefix="/api/v1/reports", tags=["reports"])
 
-    @app.get("/api/v1/system/doctor", response_model=DoctorReport)
-    async def doctor() -> DoctorReport:
-        return build_doctor_report()
-
-    @app.get("/api/v1/devices", response_model=list[DeviceSummary])
-    async def devices() -> list[DeviceSummary]:
-        return DeviceService(simulation=settings.simulation).list_devices()
-
-    @app.post(
-        "/api/v1/captures/preview",
-        response_model=CapturePreview,
-        dependencies=[Depends(require_local_token)],
-    )
-    async def capture_preview(request: CaptureRequest) -> CapturePreview:
-        try:
-            return DeviceService(simulation=settings.simulation).capture_preview(request)
-        except RuntimeError as error:
-            raise HTTPException(status_code=409, detail=str(error)) from error
-
-    @app.post(
-        "/api/v1/execution/jobs",
-        response_model=ExecutionResult,
-        dependencies=[Depends(require_local_token)],
-    )
-    async def execute(request: ExecutionRequest) -> ExecutionResult:
-        try:
-            return ExecutionService(settings).execute(request)
-        except ExecutionDisabledError as error:
-            raise HTTPException(status_code=403, detail=str(error)) from error
-        except ValueError as error:
-            raise HTTPException(status_code=422, detail=str(error)) from error
+    @app.get("/api/v1/health", response_model=HealthResponse)
+    async def health() -> HealthResponse:
+        return HealthResponse()
 
     return app
 
@@ -112,17 +60,10 @@ app = create_app()
 
 def run() -> None:
     settings = get_settings()
-    if not settings.is_loopback:
-        raise SystemExit(
-            "Refusing to expose hardware control outside loopback. "
-            "Use a separate authenticated gateway if remote access is required."
-        )
-    if not settings.token:
-        raise SystemExit("Set WHISPERLAB_TOKEN to a fresh per-launch secret.")
     uvicorn.run(
         "whisperlab.main:app",
-        host=settings.host,
-        port=settings.port,
+        host="0.0.0.0",
+        port=8000,
         reload=False,
     )
 

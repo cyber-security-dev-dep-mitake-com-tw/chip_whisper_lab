@@ -1,45 +1,41 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from collections.abc import AsyncGenerator
 
-from sqlalchemy import DateTime, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
-from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncEngine, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from .config import Settings
+from .config import get_settings
 
 
-class Base(AsyncAttrs, DeclarativeBase):
+class Base(DeclarativeBase):
     pass
 
 
-class Experiment(Base):
-    __tablename__ = "experiments"
-
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-    )
-    name: Mapped[str] = mapped_column(String(180))
-    workflow: Mapped[str] = mapped_column(String(80), default="capture")
-    status: Mapped[str] = mapped_column(String(40), default="draft")
-    device_serial: Mapped[str | None] = mapped_column(String(180), nullable=True)
-    configuration: Mapped[dict] = mapped_column(JSONB, default=dict)
-    artifact_path: Mapped[str | None] = mapped_column(Text, nullable=True)
-    trace_count: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
-    )
+_engine: AsyncEngine | None = None
+_session_factory: sessionmaker | None = None
 
 
-def create_engine(settings: Settings) -> AsyncEngine:
-    return create_async_engine(settings.database_url, pool_pre_ping=True)
+def get_engine() -> AsyncEngine:
+    global _engine
+    if _engine is None:
+        settings = get_settings()
+        _engine = create_async_engine(settings.database_url, pool_pre_ping=True)
+    return _engine
+
+
+def get_session_factory() -> sessionmaker:
+    global _session_factory
+    if _session_factory is None:
+        _session_factory = sessionmaker(
+            get_engine(),
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+    return _session_factory
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    factory = get_session_factory()
+    async with factory() as session:
+        yield session
