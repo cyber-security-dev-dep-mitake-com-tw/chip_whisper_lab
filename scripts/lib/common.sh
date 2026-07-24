@@ -5,6 +5,7 @@ set -euo pipefail
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cw_source_dir="${project_root}/.vendor/chipwhisperer"
 venv_dir="${project_root}/.venv"
+python_install_dir="${project_root}/.toolchains/python"
 
 color_green=$'\033[32m'
 color_yellow=$'\033[33m'

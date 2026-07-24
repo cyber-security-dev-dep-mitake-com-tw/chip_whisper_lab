@@ -20,7 +20,7 @@ install_app_stack=true
 install_avr=true
 install_openocd=true
 verify_hardware=false
-cw_ref="${CW_REF:-master}"
+cw_ref="${CW_REF:-v6.0.0}"
 python_version="${WHISPERLAB_PYTHON_VERSION:-3.12}"
 
 usage() {
@@ -36,7 +36,7 @@ Options:
   --skip-avr           Skip the optional AVR compiler.
   --skip-openocd       Skip OpenOCD.
   --verify-hardware    Finish by opening a real cw.scope() connection.
-  --cw-ref REF         ChipWhisperer release/tag/branch (default: master).
+  --cw-ref REF         ChipWhisperer release/tag/branch (default: v6.0.0).
   --python VERSION     Native Python version managed by uv (default: 3.12).
   -h, --help           Show this help.
 
@@ -146,15 +146,22 @@ run "${homebrew_bin}" install "${brew_packages[@]}"
 if [[ "${install_avr}" == "true" ]]; then
   info "4/9 Installing the AVR toolchain from osx-cross/avr"
   run "${homebrew_bin}" tap osx-cross/avr
-  run env HOMEBREW_NO_INSTALL_FROM_API=1 "${homebrew_bin}" install avr-gcc
+  # Homebrew 6 requires explicit trust for third-party formulae. Trust only
+  # the exact AVR GCC formula selected by the tap, never the whole tap.
+  run "${homebrew_bin}" trust --formula \
+    osx-cross/avr/avr-binutils \
+    osx-cross/avr/avr-gcc@9
+  run "${homebrew_bin}" install osx-cross/avr/avr-gcc@9
 else
   info "4/9 Skipping optional AVR toolchain"
 fi
 
 info "5/9 Creating a native project-local Python"
 uv_bin="/opt/homebrew/bin/uv"
-run "${uv_bin}" python install "${python_version}"
-run "${uv_bin}" venv --python "${python_version}" --clear "${venv_dir}"
+run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
+  "${uv_bin}" python install "${python_version}"
+run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
+  "${uv_bin}" venv --python "${python_version}" --clear "${venv_dir}"
 
 info "6/9 Fetching the latest known-working ChipWhisperer source"
 if [[ -d "${cw_source_dir}/.git" ]]; then
@@ -163,7 +170,7 @@ if [[ -d "${cw_source_dir}/.git" ]]; then
     die "${cw_source_dir} exists but is not NewAE ChipWhisperer."
   run git -C "${cw_source_dir}" fetch --tags origin
   run git -C "${cw_source_dir}" checkout "${cw_ref}"
-  if [[ "${cw_ref}" == "master" || "${cw_ref}" == "develop" ]]; then
+  if [[ "${cw_ref}" == "develop" ]]; then
     run git -C "${cw_source_dir}" pull --ff-only origin "${cw_ref}"
   fi
 else
