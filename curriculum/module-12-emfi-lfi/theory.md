@@ -1,59 +1,51 @@
-# Module 12: Theory - Fault Injection - EMFI & LFI Theory
+# Fault Injection: EMFI & Laser (LFI)
 
-## Core Concepts
+## Electromagnetic Fault Injection (EMFI)
 
-### Electromagnetic fault injection principles
+### Principle
+A strong, localized electromagnetic pulse can induce currents in the target circuit that cause bit flips in memory or register values. Unlike voltage/clock glitching, EMFI can target specific components without physical contact.
 
-Understanding the fundamental principles of Electromagnetic fault injection principles is essential for:
-- Analyzing system security properties
-- Identifying potential vulnerabilities
-- Implementing effective countermeasures
-- Evaluating security certifications
+### Attack Setup
+1. EMFI coil positioned near target chip
+2. Pulse generator produces short high-voltage spike
+3. ChipWhisperer provides victim clock/trigger synchronization
+4. Automated parameter scanning: coil position, pulse timing, amplitude
 
-### Laser fault injection and optical attacks
+### Attack Surface via EMFI
+- Flash memory bit flips
+- SRAM contents corruption
+- Register file corruption
+- Bus arbitration logic disruption
 
-Laser fault injection and optical attacks provides the foundation for:
-- Security analysis methodologies
-- Attack implementation techniques
-- Defense mechanism development
-- Performance optimization
+### Practical Considerations
+- Coil proximity matters greatly (near-field coupling)
+- EMFI can target specific functional units on a die
+- ChipWhisperer enables automated scanning with precise timing
 
-## Technical Details
+## Laser Fault Injection (LFI)
 
-### Key Principles
+### Principle
+A focused laser beam aimed at specific transistors on the die can change their logic state by depositing enough energy to flip a transistor's state.
 
-1. **Security Fundamentals**: Core security properties and requirements
-2. **Implementation Considerations**: Practical aspects of secure design
-3. **Attack Vectors**: Common vulnerabilities and exploitation methods
-4. **Countermeasures**: Defensive techniques and best practices
+### Equipment Requirements
+- Femtosecond or nanosecond pulsed laser (e.g.,钦脉激光器)
+- Inverted microscope with XYZ positioning stage
+- Beam focusing optics
+- Dark room environment
 
-### Mathematical Foundations
+### Attack Precision
+- Can target individual transistors (~1 μm precision)
+- Can flip specific bits in registers or memory cells
+- Can trigger faults in specific clock cycles
 
-The mathematical basis for this module includes:
-- Statistical analysis methods
-- Information theory concepts
-- Computational complexity principles
-- Cryptographic foundations
-
-## Practical Applications
-
-### Real-World Examples
-
-- Industry implementations and case studies
-- Academic research and publications
-- Standardization efforts and compliance requirements
-- Emerging trends and future directions
-
-### Performance Considerations
-
-- Implementation efficiency
-- Resource constraints
-- Trade-offs between security and performance
-- Scalability and deployment considerations
+### ChipWhisperer + LFI
+While LFI requires expensive equipment, ChipWhisperer can serve as:
+- Victims operation trigger (synchronized with laser pulse)
+- Fault result capture via power analysis or serial output
+- Automated parameter sweeps with precise timing control
 
 ## References
-
-1. Academic papers and publications
-2. Industry standards and specifications
-3. Open-source implementations and tools
-4. Training materials and documentation
+- O'Flynn, C. & Chen, Z.D. (2021). The Hardware Hacking Handbook. Chapter 7.
+- Riscure Fault Injection Testing Guidelines (2022).
+- Shahbaz, M., et al. "Laser Fault Injection on Modern Microcontrollers." USENIX Security 2018.
+- PicoEMP open-source EMFI project: https://github.com/131041043/PicoEMP

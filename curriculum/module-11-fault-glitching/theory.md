@@ -1,59 +1,52 @@
-# Module 11: Theory - Fault Injection - Voltage & Clock Glitching
+# Fault Injection: Voltage & Clock Glitching
 
-## Core Concepts
+## Overview
 
-### Voltage and clock glitching fundamentals
+Fault Injection Attacks (FIA) are **active** attacks that manipulate the physical operation of a target device to cause it to behave incorrectly. Unlike passive attacks (CPA/DPA), fault injection actively interferes with the target during operation.
 
-Understanding the fundamental principles of Voltage and clock glitching fundamentals is essential for:
-- Analyzing system security properties
-- Identifying potential vulnerabilities
-- Implementing effective countermeasures
-- Evaluating security certifications
+## Voltage Glitching
 
-### Glitch parameter optimization and control
+### Principle
+By momentarily dropping the supply voltage below the operating threshold, the target microcontroller can be made to skip instructions — typically conditional branch instructions that implement security checks (e.g., password verification, secure boot validation).
 
-Glitch parameter optimization and control provides the foundation for:
-- Security analysis methodologies
-- Attack implementation techniques
-- Defense mechanism development
-- Performance optimization
+### Target Setup
+1. Connect ChipWhisperer-Lite to the target VCC (via shunt resistor or direct connection)
+2. Configure glitch module: offset (ns), width (ns), repeat count
+3. Set target reset GPIO and glitch output GPIO
 
-## Technical Details
+### Key Parameters
+| Parameter | Description | Typical Range |
+|-----------|-------------|---------------|
+| Offset | Time from target reset to glitch trigger | 0 - 1000 ns |
+| Width | Duration of voltage drop | 1 - 50 ns |
+| Repeat | Number of glitch pulses | 1 - 1000 |
+| Voltage | Target supply voltage (normal vs glitch) | 3.3V -> 1.8V |
 
-### Key Principles
+### Attack Workflow
+1. Identify security check loop (IDA Pro / Ghidra disassembly)
+2. Determine branch instruction address
+3. Scan offset/width parameter space
+4. Detect successful glitch (e.g., "correct" flag set)
+5. Repeat for reliability
 
-1. **Security Fundamentals**: Core security properties and requirements
-2. **Implementation Considerations**: Practical aspects of secure design
-3. **Attack Vectors**: Common vulnerabilities and exploitation methods
-4. **Countermeasures**: Defensive techniques and best practices
+## Clock Glitching
 
-### Mathematical Foundations
+### Principle
+Injecting additional clock pulses into the target causes the instruction pipeline to execute unintended instructions, often skipping security-critical branches.
 
-The mathematical basis for this module includes:
-- Statistical analysis methods
-- Information theory concepts
-- Computational complexity principles
-- Cryptographic foundations
+### Differences from Voltage Glitching
+- Clock glitching affects the CPU pipeline directly
+- Voltage glitching affects the power rail to all circuits
+- Clock glitching is often more precise but requires closer physical access
 
-## Practical Applications
-
-### Real-World Examples
-
-- Industry implementations and case studies
-- Academic research and publications
-- Standardization efforts and compliance requirements
-- Emerging trends and future directions
-
-### Performance Considerations
-
-- Implementation efficiency
-- Resource constraints
-- Trade-offs between security and performance
-- Scalability and deployment considerations
+## ChipWhisperer-Lite Capabilities
+The ChipWhisperer-Lite has built-in glitch hardware:
+- External glitch output via IO2/IO3
+- Programmable glitch width and offset
+- Synchronized with target reset timing
 
 ## References
-
-1. Academic papers and publications
-2. Industry standards and specifications
-3. Open-source implementations and tools
-4. Training materials and documentation
+- O'Flynn, C. & Chen, Z.D. (2021). The Hardware Hacking Handbook. No Starch Press. Chapters 5-6.
+- ChipWhisperer fault injection course materials (fault101): https://github.com/newaetech/chipwhisperer/tree/master/jupyter/courses/fault101
+- Riscure Fault Injection Testing Guidelines (2022)
+- PicoEMP (opensource EMFI tool): https://github.com/131041043/PicoEMP

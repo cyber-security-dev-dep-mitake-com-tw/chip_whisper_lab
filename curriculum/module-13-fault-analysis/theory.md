@@ -1,59 +1,61 @@
-# Module 13: Theory - Fault Analysis Models & Defenses
+# Fault Analysis Models & Defenses (DFA)
 
-## Core Concepts
+## Differential Fault Analysis (DFA)
 
-### Differential Fault Analysis techniques
+### Principle
+DFA compares correct and faulty cryptographic outputs to recover the secret key. Unlike CPA (which uses power traces, a passive technique), DFA uses the actual difference between correct and faulty outputs as the primary signal.
 
-Understanding the fundamental principles of Differential Fault Analysis techniques is essential for:
-- Analyzing system security properties
-- Identifying potential vulnerabilities
-- Implementing effective countermeasures
-- Evaluating security certifications
+### Attack Steps for AES-128
 
-### Fault attack countermeasures and defenses
+1. **Obtain a correct ciphertext pair**
+   Encrypt plaintext P with key K to get correct ciphertext C = AES(P, K).
 
-Fault attack countermeasures and defenses provides the foundation for:
-- Security analysis methodologies
-- Attack implementation techniques
-- Defense mechanism development
-- Performance optimization
+2. **Inject a fault during encryption**
+   Fault at round N causes incorrect ciphertext C* = AES_faulty(P, K).
 
-## Technical Details
+3. **Compute output difference**
+   ΔC = C ⊕ C* (XOR of correct and faulty ciphertext).
 
-### Key Principles
+4. **Analyze differential characteristics**
+   The expected differential ΔC depends on the fault location and the key byte(s) involved.
 
-1. **Security Fundamentals**: Core security properties and requirements
-2. **Implementation Considerations**: Practical aspects of secure design
-3. **Attack Vectors**: Common vulnerabilities and exploitation methods
-4. **Countermeasures**: Defensive techniques and best practices
+5. **Recover key candidates**
+   For each key byte hypothesis, check if the expected differential matches the observed ΔC.
+   Filter candidates using additional (correct, faulty) pairs.
 
-### Mathematical Foundations
+6. **Repeat for remaining key bytes**
+   A single well-placed fault can recover 16+ key bytes of AES-128.
 
-The mathematical basis for this module includes:
-- Statistical analysis methods
-- Information theory concepts
-- Computational complexity principles
-- Cryptographic foundations
+### AES DFA Concrete Example
 
-## Practical Applications
+A single fault at the final round input of AES-128:
+- The fault propagates through InvShiftRows and InvSubBytes
+- Each byte of the state can be analyzed independently for key byte recovery
+- Complexity drops from 2^128 brute force to ~2^15 operations per recovered byte
 
-### Real-World Examples
+## Countermeasures
 
-- Industry implementations and case studies
-- Academic research and publications
-- Standardization efforts and compliance requirements
-- Emerging trends and future directions
+### Lockstep (Duplicate Logic)
+- Run duplicate logic paths with comparison at each step
+- Detects Single Event Upsets (SEUs) from radiation or voltage glitches
+- Adds ~100% area overhead
 
-### Performance Considerations
+### Redundancy (Multiple Sensors)
+- Multiple sensors for the same security-critical value
+- Majority voting to detect tampering
+- Can detect faults that survive clock/voltage glitching
 
-- Implementation efficiency
-- Resource constraints
-- Trade-offs between security and performance
-- Scalability and deployment considerations
+### Time Redundancy
+- Duplicate computation and compare results
+- Adds computational overhead but provides fault detection
+- Used in high-security TPM and smartcard implementations
+
+### Countermeasure Limitations
+- DFA is resistant to many standard countermeasures
+- Active shields and tamper detection provide strongest defense
+- Combining defenses (layered approach) is recommended
 
 ## References
-
-1. Academic papers and publications
-2. Industry standards and specifications
-3. Open-source implementations and tools
-4. Training materials and documentation
+- O'Flynn, C. & Chen, Z.D. (2021). The Hardware Hacking Handbook. Chapters 8-9.
+- Riscure Fault Injection Testing Guidelines.
+- Barenghi, A., et al. "Fault Attacks against AES: A Unified View." Journal of Cryptographic Engineering.
