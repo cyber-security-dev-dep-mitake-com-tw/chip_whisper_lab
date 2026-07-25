@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import math
 from datetime import UTC, datetime
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..db import get_db
+from ..deps import DbSession
 from ..models.experiment import Experiment
 from ..schemas import ErrorResponse, PaginatedResponse
 
@@ -41,23 +41,28 @@ class ExperimentOut(BaseModel):
 
 @router.get("", response_model=PaginatedResponse[ExperimentOut])
 async def list_experiments(
-    page: int = Field(default=1, ge=1),
-    page_size: int = Field(default=20, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
+    db: DbSession,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
     total_q = await db.execute(select(func.count(Experiment.id)))
     total = total_q.scalar_one()
     pages = max(1, math.ceil(total / page_size))
     offset = (page - 1) * page_size
     result = await db.execute(
-        select(Experiment).order_by(Experiment.created_at.desc()).offset(offset).limit(page_size)
+        select(Experiment)
+        .order_by(Experiment.created_at.desc())
+        .offset(offset)
+        .limit(page_size)
     )
     items = [ExperimentOut.model_validate(e) for e in result.scalars().all()]
-    return PaginatedResponse(items=items, total=total, page=page, page_size=page_size, pages=pages)
+    return PaginatedResponse(
+        items=items, total=total, page=page, page_size=page_size, pages=pages
+    )
 
 
 @router.post("", response_model=ExperimentOut, status_code=201)
-async def create_experiment(body: ExperimentCreate, db: AsyncSession = Depends(get_db)):
+async def create_experiment(body: ExperimentCreate, db: DbSession):
     exp = Experiment(name=body.name, description=body.description, tags=body.tags)
     db.add(exp)
     await db.commit()
@@ -65,8 +70,12 @@ async def create_experiment(body: ExperimentCreate, db: AsyncSession = Depends(g
     return ExperimentOut.model_validate(exp)
 
 
-@router.get("/{experiment_id}", response_model=ExperimentOut, responses={404: {"model": ErrorResponse}})
-async def get_experiment(experiment_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.get(
+    "/{experiment_id}",
+    response_model=ExperimentOut,
+    responses={404: {"model": ErrorResponse}},
+)
+async def get_experiment(experiment_id: UUID, db: DbSession):
     result = await db.execute(select(Experiment).where(Experiment.id == experiment_id))
     exp = result.scalar_one_or_none()
     if exp is None:
@@ -74,9 +83,13 @@ async def get_experiment(experiment_id: UUID, db: AsyncSession = Depends(get_db)
     return ExperimentOut.model_validate(exp)
 
 
-@router.patch("/{experiment_id}", response_model=ExperimentOut, responses={404: {"model": ErrorResponse}})
+@router.patch(
+    "/{experiment_id}",
+    response_model=ExperimentOut,
+    responses={404: {"model": ErrorResponse}},
+)
 async def update_experiment(
-    experiment_id: UUID, body: ExperimentUpdate, db: AsyncSession = Depends(get_db)
+    experiment_id: UUID, body: ExperimentUpdate, db: DbSession
 ):
     result = await db.execute(select(Experiment).where(Experiment.id == experiment_id))
     exp = result.scalar_one_or_none()
@@ -94,8 +107,12 @@ async def update_experiment(
     return ExperimentOut.model_validate(exp)
 
 
-@router.delete("/{experiment_id}", status_code=204, responses={404: {"model": ErrorResponse}})
-async def delete_experiment(experiment_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.delete(
+    "/{experiment_id}",
+    status_code=204,
+    responses={404: {"model": ErrorResponse}},
+)
+async def delete_experiment(experiment_id: UUID, db: DbSession):
     result = await db.execute(select(Experiment).where(Experiment.id == experiment_id))
     exp = result.scalar_one_or_none()
     if exp is None:

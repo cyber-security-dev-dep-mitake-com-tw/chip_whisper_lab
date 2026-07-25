@@ -20,15 +20,15 @@ NC='\033[0m' # No Color
 
 # Logging functions
 log_info() {
-    echo -e "${GREEN}[INFO]${NC} $*"
+	echo -e "${GREEN}[INFO]${NC} $*"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $*"
+	echo -e "${YELLOW}[WARN]${NC} $*"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $*"
+	echo -e "${RED}[ERROR]${NC} $*"
 }
 
 # Configuration
@@ -46,13 +46,13 @@ mkdir -p "${BUILD_DIR}/cryogenic-circuitry"
 
 # Function to implement quantum computing (Module 25)
 implement_quantum_computing() {
-    log_info "Implementing Quantum Computing (Module 25)"
-    
-    # Create quantum cavity optimization workspace
-    local q_workspace="${BUILD_DIR}/quantum-cavity"
-    
-    # Create quantum assembly code examples
-    cat > "${q_workspace}/qasm_quantum_circuits.qasm" << 'EOF'
+	log_info "Implementing Quantum Computing (Module 25)"
+
+	# Create quantum cavity optimization workspace
+	local q_workspace="${BUILD_DIR}/quantum-cavity"
+
+	# Create quantum assembly code examples
+	cat >"${q_workspace}/qasm_quantum_circuits.qasm" <<'EOF'
 // Quantum Circuit for Shor's Algorithm (Demonstration)
 OPENQASM 2.0;
 
@@ -78,9 +78,9 @@ quantum bar() {
     h q[0];
 }
 EOF
-    
-    # Create Python Qiskit implementation
-    cat > "${q_workspace}/qiskit_example.py" << 'EOF'
+
+	# Create Python Qiskit implementation
+	cat >"${q_workspace}/qiskit_example.py" <<'EOF'
 """Advanced Quantum Computing for Hardware Security"""
 import numpy as np
 from qiskit import QuantumCircuit, Aer, execute
@@ -139,9 +139,9 @@ if __name__ == "__main__":
     # Calculate entanglement security distance
     print("Calculating quantum entanglement security metrics...")
 EOF
-    
-    # Create verification script
-    cat > "${q_workspace}/verify_quantum_security.sh" << 'EOF'
+
+	# Create verification script
+	cat >"${q_workspace}/verify_quantum_security.sh" <<'EOF'
 #!/bin/bash
 
 echo "Verifying Quantum Computing Laboratory Setup..."
@@ -215,20 +215,20 @@ QSPY
 
 echo "✓ Quantum security verification completed"
 EOF
-    
-    chmod +x "${q_workspace}/verify_quantum_security.sh"
-    
-    log_info "✓ Quantum Computing (Module 25) implemented"
+
+	chmod +x "${q_workspace}/verify_quantum_security.sh"
+
+	log_info "✓ Quantum Computing (Module 25) implemented"
 }
 
 # Function to implement TEE/TrustZone (Module 17)
 implement_tee_trustzone() {
-    log_info "Implementing Trusted Execution Environment (Module 17)"
-    
-    local tee_workspace="${BUILD_DIR}/op-tee-security"
-    
-    # Create OP-TEE demonstration code
-    cat > "${tee_workspace}/tee_secure_computing.py" << 'EOF'
+	log_info "Implementing Trusted Execution Environment (Module 17)"
+
+	local tee_workspace="${BUILD_DIR}/op-tee-security"
+
+	# Create OP-TEE demonstration code
+	cat >"${tee_workspace}/tee_secure_computing.py" <<'EOF'
 """Trusted Execution Environment Computing for Hardware Security"""
 import subprocess
 import os
@@ -326,9 +326,9 @@ if __name__ == "__main__":
         print("\n✗ TEE demonstrations failed")
         exit(1
 EOF
-    
-    # Create test script
-    cat > "${tee_workspace}/test_tee_security.py" << 'EOF'
+
+	# Create test script
+	cat >"${tee_workspace}/test_tee_security.py" <<'EOF'
 #!/usr/bin/env python3
 """Test TEE security capabilities"""
 
@@ -378,9 +378,9 @@ class TestTEESecurity(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
 EOF
-    
-    # Create documentation
-    cat > "${tee_workspace}/README.md" << 'EOF'
+
+	# Create documentation
+	cat >"${tee_workspace}/README.md" <<'EOF'
 # Trusted Execution Environment (TEE) Laboratory - Module 17
 
 ## Overview
@@ -455,18 +455,18 @@ This laboratory will be evaluated based on:
 
 *(This is a simulator-based implementation demonstrating TEE concepts in a controlled environment)*
 EOF
-    
-    log_info "✓ Trusted Execution Environment (Module 17) implemented"
+
+	log_info "✓ Trusted Execution Environment (Module 17) implemented"
 }
 
 # Function to implement cryogenic electronics (Module 23)
 implement_cryogenic_electronics() {
-    log_info "Implementing Cryogenic Electronics (Module 23)"
-    
-    local cryo_workspace="${BUILD_DIR}/cryogenic-circuitry"
-    
-    # Create cryogenic circuit analysis tools
-    cat > "${cryo_workspace}/superconducting_circuits.py" << 'EOF'
+	log_info "Implementing Cryogenic Electronics (Module 23)"
+
+	local cryo_workspace="${BUILD_DIR}/cryogenic-circuitry"
+
+	# Create cryogenic circuit analysis tools
+	cat >"${cryo_workspace}/superconducting_circuits.py" <<'EOF'
 """Cryogenic electronics analysis for hardware security"""
 import numpy as np
 import matplotlib.pyplot as plt
@@ -630,9 +630,9 @@ if __name__ == "__main__":
         print("\n✗ Cryogenic Electronics demonstrations failed")
         exit(1)
 EOF
-    
-    # Create comprehensive documentation
-    cat > "${cryo_workspace}/README.md" << 'EOF'
+
+	# Create comprehensive documentation
+	cat >"${cryo_workspace}/README.md" <<'EOF'
 # Cryogenic Electronics Laboratory - Module 23
 
 ## Overview
@@ -787,24 +787,24 @@ This laboratory will be evaluated based on:
 
 *(This implementation requires cryogenic equipment access. Simulator-only demonstrations are available for educational purposes only)*)
 EOF
-    
-    log_info "✓ Cryogenic Electronics (Module 23) implemented"
+
+	log_info "✓ Cryogenic Electronics (Module 23) implemented"
 }
 
 # Main function to execute all Phase 6.1 components
 main() {
-    log_info "Executing Phase 6.1: Advanced Physics Laboratory Implementation"
-    log_info "This phase implements Modules 17, 23, and 25 for advanced hardware security testing"
-    
-    # Execute all Phase 6.1 components
-    implement_quantum_computing
-    implement_tee_trustzone
-    implement_cryogenic_electronics
-    
-    log_info "✓ Phase 6.1: Advanced Physics Laboratory Implementation completed successfully"
-    
-    # Create summary report
-    cat > "${BUILD_DIR}/phase6_summary.txt" << EOF
+	log_info "Executing Phase 6.1: Advanced Physics Laboratory Implementation"
+	log_info "This phase implements Modules 17, 23, and 25 for advanced hardware security testing"
+
+	# Execute all Phase 6.1 components
+	implement_quantum_computing
+	implement_tee_trustzone
+	implement_cryogenic_electronics
+
+	log_info "✓ Phase 6.1: Advanced Physics Laboratory Implementation completed successfully"
+
+	# Create summary report
+	cat >"${BUILD_DIR}/phase6_summary.txt" <<EOF
 Phase 6.1 Implementation Summary
 ===============================
 
@@ -861,8 +861,8 @@ Next Steps:
 Note: Quantum and cryogenic components require specialized equipment.
  simulator-based demonstrations are available for educational purposes.
 EOF
-    
-    log_info "✓ Summary report created"
+
+	log_info "✓ Summary report created"
 }
 
 # Execute main function

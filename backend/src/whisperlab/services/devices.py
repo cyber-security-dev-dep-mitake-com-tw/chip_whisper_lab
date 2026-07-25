@@ -53,7 +53,11 @@ class DeviceService:
         for index in range(displayed_samples):
             carrier = 0.018 * math.sin(index / 11) + 0.01 * math.sin(index / 3.7)
             trigger = 0.19 * math.exp(-((index - displayed_samples * 0.38) ** 2) / 36)
-            aes_activity = 0.045 * math.sin(index * 0.9) if displayed_samples * 0.42 < index < displayed_samples * 0.67 else 0
+            aes_activity = (
+                0.045 * math.sin(index * 0.9)
+                if displayed_samples * 0.42 < index < displayed_samples * 0.67
+                else 0
+            )
             trace.append(round(carrier + trigger + aes_activity + rng.gauss(0, 0.008), 6))
 
         return CapturePreview(

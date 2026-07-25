@@ -28,7 +28,7 @@ python_version="${WHISPERLAB_PYTHON_VERSION:-3.12}"
 install_report_file="${project_root}/INSTALL_REPORT.json"
 
 usage() {
-  cat <<'EOF'
+	cat <<'EOF'
 Usage: ./scripts/install-macos.sh [options]
 
 Installs a native Apple Silicon ChipWhisperer development environment.
@@ -57,33 +57,33 @@ EOF
 }
 
 while (($#)); do
-  case "$1" in
-    --dry-run) dry_run=true ;;
-    --yes) assume_yes=true ;;
-    --core-only) install_app_stack=false ;;
-    --skip-avr) install_avr=false ;;
-    --skip-openocd) install_openocd=false ;;
-    --verify-hardware) verify_hardware=true ;;
-    --simulator-only) simulator_only=true ;;
-    --conda-fallback) install_conda_fallback=true ;;
-    --install-esp32) install_esp32=true ;;
-    --cw-ref)
-      shift
-      (($#)) || die "--cw-ref requires a value."
-      cw_ref="$1"
-      ;;
-    --python)
-      shift
-      (($#)) || die "--python requires a value."
-      python_version="$1"
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *) die "Unknown option: $1" ;;
-  esac
-  shift
+	case "$1" in
+		--dry-run) dry_run=true ;;
+		--yes) assume_yes=true ;;
+		--core-only) install_app_stack=false ;;
+		--skip-avr) install_avr=false ;;
+		--skip-openocd) install_openocd=false ;;
+		--verify-hardware) verify_hardware=true ;;
+		--simulator-only) simulator_only=true ;;
+		--conda-fallback) install_conda_fallback=true ;;
+		--install-esp32) install_esp32=true ;;
+		--cw-ref)
+			shift
+			(($#)) || die "--cw-ref requires a value."
+			cw_ref="$1"
+			;;
+		--python)
+			shift
+			(($#)) || die "--python requires a value."
+			python_version="$1"
+			;;
+		-h | --help)
+			usage
+			exit 0
+			;;
+		*) die "Unknown option: $1" ;;
+	esac
+	shift
 done
 
 require_apple_silicon
@@ -110,7 +110,7 @@ Planned official prerequisites:
 EOF
 
 if [[ "${install_app_stack}" == "true" ]]; then
-  cat <<'EOF'
+	cat <<'EOF'
 Planned WhisperLab application stack:
   Node.js, PostgreSQL, Next.js, FastAPI
 EOF
@@ -118,151 +118,151 @@ fi
 printf '\n'
 
 if [[ "${dry_run}" != "true" ]] && ! confirm "Proceed with these installations?"; then
-  die "Installation cancelled."
+	die "Installation cancelled."
 fi
 
 info "1/9 Checking Apple Command Line Tools"
 if ! xcode-select -p >/dev/null 2>&1; then
-  if [[ "${dry_run}" == "true" ]]; then
-    run xcode-select --install
-  else
-    xcode-select --install
-    die "Finish the Apple Command Line Tools dialog, then run this installer again."
-  fi
+	if [[ "${dry_run}" == "true" ]]; then
+		run xcode-select --install
+	else
+		xcode-select --install
+		die "Finish the Apple Command Line Tools dialog, then run this installer again."
+	fi
 else
-  printf 'ready: %s\n' "$(xcode-select -p)"
+	printf 'ready: %s\n' "$(xcode-select -p)"
 fi
 
 info "2/9 Installing Homebrew when missing"
 if ! command_exists brew && [[ ! -x /opt/homebrew/bin/brew ]]; then
-  printf '%s\n' '+ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-  if [[ "${dry_run}" != "true" ]]; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  fi
+	printf '%s\n' '+ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+	if [[ "${dry_run}" != "true" ]]; then
+		/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	fi
 fi
 
 if [[ "${dry_run}" == "true" ]] && ! command_exists brew && [[ ! -x /opt/homebrew/bin/brew ]]; then
-  homebrew_bin="/opt/homebrew/bin/brew"
+	homebrew_bin="/opt/homebrew/bin/brew"
 else
-  homebrew_root="$(brew_prefix)" || die "Homebrew was not found after installation."
-  [[ "${homebrew_root}" == "/opt/homebrew" ]] || die "Expected native Apple Silicon Homebrew at /opt/homebrew; found ${homebrew_root}."
-  homebrew_bin="${homebrew_root}/bin/brew"
-  printf 'ready: %s\n' "${homebrew_root}"
+	homebrew_root="$(brew_prefix)" || die "Homebrew was not found after installation."
+	[[ "${homebrew_root}" == "/opt/homebrew" ]] || die "Expected native Apple Silicon Homebrew at /opt/homebrew; found ${homebrew_root}."
+	homebrew_bin="${homebrew_root}/bin/brew"
+	printf 'ready: %s\n' "${homebrew_root}"
 fi
 
 info "3/9 Installing host build tools"
 brew_packages=(git make pkgconf uv)
 if [[ "${simulator_only}" != "true" ]]; then
-  brew_packages+=(libusb arm-none-eabi-gcc)
+	brew_packages+=(libusb arm-none-eabi-gcc)
 fi
 if [[ "${install_openocd}" == "true" && "${simulator_only}" != "true" ]]; then
-  brew_packages+=(open-ocd)
+	brew_packages+=(open-ocd)
 fi
 if [[ "${install_esp32}" == "true" && "${simulator_only}" != "true" ]]; then
-  brew_packages+=(open-ocd)
+	brew_packages+=(open-ocd)
 fi
 if [[ "${install_app_stack}" == "true" ]]; then
-  brew_packages+=(node postgresql@17)
+	brew_packages+=(node postgresql@17)
 fi
 run "${homebrew_bin}" install "${brew_packages[@]}"
 
 if [[ "${install_conda_fallback}" == "true" ]]; then
-  info "3a/9 Installing Conda/Miniforge as Python/libusb fallback (M1 arch match)"
-  if [[ "${dry_run}" == "true" ]]; then
-    echo '+ MINIFORGE_INSTALL="curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"'
-    echo '+ verify libusb arm64: file /opt/homebrew/opt/libusb/lib/libusb-1.0.dylib'
-  else
-    conda_sh="$(mktemp)"
-    curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o "${conda_sh}"
-    bash "${conda_sh}" -b -p "${HOME}/miniconda3" 2>/dev/null || true
-    export PATH="${HOME}/miniconda3/bin:${PATH}"
-    conda_bin="${HOME}/miniconda3/bin/conda"
-    "${conda_bin}" init bash 2>/dev/null || true
-    echo 'source "${HOME}/miniconda3/etc/profile.d/conda.sh" 2>/dev/null' >> "${HOME}/.bash_profile"
-    "${conda_bin}" create -y -p "${python_install_dir}/conda" "python=${python_version}" 2>/dev/null || true
-    if [[ -f "/opt/homebrew/opt/libusb/lib/libusb-1.0.dylib" ]]; then
-      file "/opt/homebrew/opt/libusb/lib/libusb-1.0.dylib" | grep -q "arm64" || \
-        warn "libusb.dylib architecture mismatch; Conda should provide arm64-compatible libusb"
-    fi
-  fi
+	info "3a/9 Installing Conda/Miniforge as Python/libusb fallback (M1 arch match)"
+	if [[ "${dry_run}" == "true" ]]; then
+		echo '+ MINIFORGE_INSTALL="curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"'
+		echo '+ verify libusb arm64: file /opt/homebrew/opt/libusb/lib/libusb-1.0.dylib'
+	else
+		conda_sh="$(mktemp)"
+		curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o "${conda_sh}"
+		bash "${conda_sh}" -b -p "${HOME}/miniconda3" 2>/dev/null || true
+		export PATH="${HOME}/miniconda3/bin:${PATH}"
+		conda_bin="${HOME}/miniconda3/bin/conda"
+		"${conda_bin}" init bash 2>/dev/null || true
+		echo 'source "${HOME}/miniconda3/etc/profile.d/conda.sh" 2>/dev/null' >>"${HOME}/.bash_profile"
+		"${conda_bin}" create -y -p "${python_install_dir}/conda" "python=${python_version}" 2>/dev/null || true
+		if [[ -f "/opt/homebrew/opt/libusb/lib/libusb-1.0.dylib" ]]; then
+			file "/opt/homebrew/opt/libusb/lib/libusb-1.0.dylib" | grep -q "arm64" \
+				|| warn "libusb.dylib architecture mismatch; Conda should provide arm64-compatible libusb"
+		fi
+	fi
 fi
 
 if [[ "${install_avr}" == "true" && "${simulator_only}" != "true" ]]; then
-  info "4/9 Installing the AVR toolchain from osx-cross/avr"
-  run "${homebrew_bin}" tap osx-cross/avr
-  run "${homebrew_bin}" trust --formula \
-    osx-cross/avr/avr-binutils \
-    osx-cross/avr/avr-gcc@9
-  run "${homebrew_bin}" install osx-cross/avr/avr-gcc@9
+	info "4/9 Installing the AVR toolchain from osx-cross/avr"
+	run "${homebrew_bin}" tap osx-cross/avr
+	run "${homebrew_bin}" trust --formula \
+		osx-cross/avr/avr-binutils \
+		osx-cross/avr/avr-gcc@9
+	run "${homebrew_bin}" install osx-cross/avr/avr-gcc@9
 else
-  info "4/9 Skipping AVR toolchain"
+	info "4/9 Skipping AVR toolchain"
 fi
 
 info "5/9 Creating a native project-local Python"
 if [[ "${install_conda_fallback}" == "true" && -x "${HOME}/miniconda3/bin/conda" ]]; then
-  info "Using Conda Miniforge Python (M1 fallback)"
-  run "${HOME}/miniconda3/bin/conda" create -y -p "${venv_dir}" "python=${python_version}" 2>/dev/null || true
-  venv_python="${venv_dir}/bin/python"
+	info "Using Conda Miniforge Python (M1 fallback)"
+	run "${HOME}/miniconda3/bin/conda" create -y -p "${venv_dir}" "python=${python_version}" 2>/dev/null || true
+	venv_python="${venv_dir}/bin/python"
 else
-  uv_bin="/opt/homebrew/bin/uv"
-  run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
-    "${uv_bin}" python install "${python_version}"
-  run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
-    "${uv_bin}" venv --python "${python_version}" --clear "${venv_dir}"
-  venv_python="${venv_dir}/bin/python"
+	uv_bin="/opt/homebrew/bin/uv"
+	run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
+		"${uv_bin}" python install "${python_version}"
+	run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
+		"${uv_bin}" venv --python "${python_version}" --clear "${venv_dir}"
+	venv_python="${venv_dir}/bin/python"
 fi
 
 info "6/9 Fetching the latest known-working ChipWhisperer source"
 if [[ -d "${cw_source_dir}/.git" ]]; then
-  origin_url="$(git -C "${cw_source_dir}" remote get-url origin)"
-  [[ "${origin_url}" == "https://github.com/newaetech/chipwhisperer"* ]] ||
-    die "${cw_source_dir} exists but is not NewAE ChipWhisperer."
-  run git -C "${cw_source_dir}" fetch --tags origin
-  run git -C "${cw_source_dir}" checkout "${cw_ref}"
-  if [[ "${cw_ref}" == "develop" ]]; then
-    run git -C "${cw_source_dir}" pull --ff-only origin "${cw_ref}"
-  fi
+	origin_url="$(git -C "${cw_source_dir}" remote get-url origin)"
+	[[ "${origin_url}" == "https://github.com/newaetech/chipwhisperer"* ]] \
+		|| die "${cw_source_dir} exists but is not NewAE ChipWhisperer."
+	run git -C "${cw_source_dir}" fetch --tags origin
+	run git -C "${cw_source_dir}" checkout "${cw_ref}"
+	if [[ "${cw_ref}" == "develop" ]]; then
+		run git -C "${cw_source_dir}" pull --ff-only origin "${cw_ref}"
+	fi
 else
-  if [[ -e "${cw_source_dir}" ]]; then
-    die "${cw_source_dir} exists but is not a Git checkout."
-  fi
-  run git clone --branch "${cw_ref}" https://github.com/newaetech/chipwhisperer.git "${cw_source_dir}"
+	if [[ -e "${cw_source_dir}" ]]; then
+		die "${cw_source_dir} exists but is not a Git checkout."
+	fi
+	run git clone --branch "${cw_ref}" https://github.com/newaetech/chipwhisperer.git "${cw_source_dir}"
 fi
 run git -C "${cw_source_dir}" submodule update --init jupyter
 
 info "7/9 Installing ChipWhisperer, libusb1, and Jupyter"
-run "${venv_python}" -m pip install --upgrade pip 2>/dev/null || \
-  run "${uv_bin}" pip install --python "${venv_python}" --upgrade pip
+run "${venv_python}" -m pip install --upgrade pip 2>/dev/null \
+	|| run "${uv_bin}" pip install --python "${venv_python}" --upgrade pip
 run "${uv_bin}" pip install --python "${venv_python}" -e "${cw_source_dir}"
 run "${uv_bin}" pip install --python "${venv_python}" -r "${cw_source_dir}/jupyter/requirements.txt"
 
 if [[ "${install_app_stack}" == "true" ]]; then
-  info "8/9 Installing the WhisperLab API and UI"
-  run "${uv_bin}" pip install --python "${venv_python}" -e "${project_root}/backend[dev]"
-  run_in "${project_root}" npm ci
+	info "8/9 Installing the WhisperLab API and UI"
+	run "${uv_bin}" pip install --python "${venv_python}" -e "${project_root}/backend[dev]"
+	run_in "${project_root}" npm ci
 else
-  info "8/9 Skipping the WhisperLab application stack"
+	info "8/9 Skipping the WhisperLab application stack"
 fi
 
 info "9/9 Verifying architecture and imports"
 if [[ "${dry_run}" == "true" ]]; then
-  run "${venv_python}" -c "import chipwhisperer as cw; print(cw.__version__)"
-  run "${script_dir}/doctor-macos.sh"
+	run "${venv_python}" -c "import chipwhisperer as cw; print(cw.__version__)"
+	run "${script_dir}/doctor-macos.sh"
 else
-  python_machine="$("${venv_python}" -c 'import platform; print(platform.machine())')"
-  if [[ "${simulator_only}" == "true" ]]; then
-    "${venv_python}" -c 'import chipwhisperer as cw; print("ChipWhisperer", cw.__version__, "(simulator mode) import: ready")'
-  else
-    [[ "${python_machine}" == "arm64" ]] ||
-      die "Python is ${python_machine}, not arm64. Refusing an architecture-mismatched libusb setup."
-    "${venv_python}" -c 'import chipwhisperer as cw; print("ChipWhisperer", cw.__version__, "import: ready")'
-  fi
-  "${script_dir}/doctor-macos.sh" --simulator-only="${simulator_only}"
+	python_machine="$("${venv_python}" -c 'import platform; print(platform.machine())')"
+	if [[ "${simulator_only}" == "true" ]]; then
+		"${venv_python}" -c 'import chipwhisperer as cw; print("ChipWhisperer", cw.__version__, "(simulator mode) import: ready")'
+	else
+		[[ "${python_machine}" == "arm64" ]] \
+			|| die "Python is ${python_machine}, not arm64. Refusing an architecture-mismatched libusb setup."
+		"${venv_python}" -c 'import chipwhisperer as cw; print("ChipWhisperer", cw.__version__, "import: ready")'
+	fi
+	"${script_dir}/doctor-macos.sh" --simulator-only="${simulator_only}"
 fi
 
 if [[ "${verify_hardware}" == "true" && "${simulator_only}" != "true" ]]; then
-  info "Connecting to real ChipWhisperer hardware"
-  run "${venv_python}" -c 'import chipwhisperer as cw; print(cw.list_devices()); s=cw.scope(); print(s); s.dis()'
+	info "Connecting to real ChipWhisperer hardware"
+	run "${venv_python}" -c 'import chipwhisperer as cw; print(cw.list_devices()); s=cw.scope(); print(s); s.dis()'
 fi
 
 install_report "${install_report_file}"

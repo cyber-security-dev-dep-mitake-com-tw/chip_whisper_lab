@@ -59,7 +59,6 @@ app = create_app()
 
 
 def run() -> None:
-    settings = get_settings()
     uvicorn.run(
         "whisperlab.main:app",
         host="0.0.0.0",

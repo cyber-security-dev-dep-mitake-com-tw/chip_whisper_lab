@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
+from pydantic import BaseModel
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..db import get_db
+from ..deps import DbSession
 from ..models.trace import Trace
 from ..schemas import ErrorResponse, PaginatedResponse
 
@@ -37,10 +37,10 @@ class TraceOut(BaseModel):
 
 @router.post("/upload", response_model=TraceUploadResponse, status_code=201)
 async def upload_trace(
-    experiment_id: UUID = Field(..., description="Parent experiment ID"),
-    file: UploadFile = ...,
-    trace_set_name: str = Field(default="default"),
-    db: AsyncSession = Depends(get_db),
+    db: DbSession,
+    experiment_id: Annotated[UUID, Query(description="Parent experiment ID")],
+    file: Annotated[UploadFile, File()],
+    trace_set_name: Annotated[str, Form()] = "default",
 ):
     content = await file.read()
     storage_path = f"/data/traces/{experiment_id}/{trace_set_name}"
@@ -64,10 +64,10 @@ async def upload_trace(
 
 @router.get("", response_model=PaginatedResponse[TraceOut])
 async def list_traces(
+    db: DbSession,
     experiment_id: UUID | None = None,
-    page: int = Field(default=1, ge=1),
-    page_size: int = Field(default=20, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
     query = select(Trace)
     count_query = select(func.count(Trace.id))
@@ -77,13 +77,21 @@ async def list_traces(
     total = (await db.execute(count_query)).scalar_one()
     pages = max(1, math.ceil(total / page_size))
     offset = (page - 1) * page_size
-    result = await db.execute(query.order_by(Trace.created_at.desc()).offset(offset).limit(page_size))
+    result = await db.execute(
+        query.order_by(Trace.created_at.desc()).offset(offset).limit(page_size)
+    )
     items = [TraceOut.model_validate(t) for t in result.scalars().all()]
-    return PaginatedResponse(items=items, total=total, page=page, page_size=page_size, pages=pages)
+    return PaginatedResponse(
+        items=items, total=total, page=page, page_size=page_size, pages=pages
+    )
 
 
-@router.get("/{trace_id}", response_model=TraceOut, responses={404: {"model": ErrorResponse}})
-async def get_trace(trace_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.get(
+    "/{trace_id}",
+    response_model=TraceOut,
+    responses={404: {"model": ErrorResponse}},
+)
+async def get_trace(trace_id: UUID, db: DbSession):
     result = await db.execute(select(Trace).where(Trace.id == trace_id))
     trace = result.scalar_one_or_none()
     if trace is None:
@@ -92,7 +100,7 @@ async def get_trace(trace_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{trace_id}/download")
-async def download_trace(trace_id: UUID, db: AsyncSession = Depends(get_db)):
+async def download_trace(trace_id: UUID, db: DbSession):
     result = await db.execute(select(Trace).where(Trace.id == trace_id))
     trace = result.scalar_one_or_none()
     if trace is None:

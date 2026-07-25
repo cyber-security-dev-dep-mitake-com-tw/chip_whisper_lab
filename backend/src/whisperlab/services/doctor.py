@@ -63,7 +63,9 @@ def build_doctor_report() -> DoctorReport:
         DoctorCheck(
             key="platform",
             label="macOS Apple Silicon",
-            state=CheckState.READY if system == "Darwin" and machine == "arm64" else CheckState.WARNING,
+            state=CheckState.READY
+            if system == "Darwin" and machine == "arm64"
+            else CheckState.WARNING,
             detail=f"{system} {machine}",
             remediation=None
             if system == "Darwin" and machine == "arm64"

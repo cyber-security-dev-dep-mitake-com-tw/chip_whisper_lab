@@ -2,8 +2,13 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.orm import DeclarativeBase
 
 from .config import get_settings
 
@@ -13,7 +18,7 @@ class Base(DeclarativeBase):
 
 
 _engine: AsyncEngine | None = None
-_session_factory: sessionmaker | None = None
+_session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
 def get_engine() -> AsyncEngine:
@@ -24,10 +29,10 @@ def get_engine() -> AsyncEngine:
     return _engine
 
 
-def get_session_factory() -> sessionmaker:
+def get_session_factory() -> async_sessionmaker[AsyncSession]:
     global _session_factory
     if _session_factory is None:
-        _session_factory = sessionmaker(
+        _session_factory = async_sessionmaker(
             get_engine(),
             class_=AsyncSession,
             expire_on_commit=False,

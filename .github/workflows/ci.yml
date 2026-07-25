@@ -15,9 +15,9 @@ jobs:
       - name: Install shellcheck
         run: brew install shellcheck shfmt
       - name: Shellcheck
-        run: shellcheck scripts/*.sh scripts/lib/*.sh
+        run: shellcheck -S error scripts/*.sh scripts/lib/*.sh
       - name: shfmt
-        run: shfmt -d scripts/*.sh scripts/lib/*.sh
+        run: shfmt -d -i 0 -bn -ci scripts/*.sh scripts/lib/*.sh
 
   lint-backend:
     name: Lint backend (Python)
@@ -40,9 +40,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-        working-directory: app
       - run: npm run lint
-        working-directory: app
 
   typecheck-backend:
     name: Type check backend
@@ -66,9 +64,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-        working-directory: app
       - run: npx tsc --noEmit
-        working-directory: app
 
   test-backend-unit:
     name: Backend unit tests

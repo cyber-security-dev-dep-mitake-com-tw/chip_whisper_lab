@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..db import get_db
+from ..deps import DbSession
 from ..models.report import Report
 from ..schemas import ErrorResponse, PaginatedResponse
 
@@ -32,7 +32,7 @@ class ReportOut(BaseModel):
 
 
 @router.post("", response_model=ReportOut, status_code=201)
-async def generate_report(body: ReportCreate, db: AsyncSession = Depends(get_db)):
+async def generate_report(body: ReportCreate, db: DbSession):
     file_path = f"/data/reports/{body.experiment_id}/{body.report_type}.pdf"
     report = Report(
         experiment_id=body.experiment_id,
@@ -47,10 +47,10 @@ async def generate_report(body: ReportCreate, db: AsyncSession = Depends(get_db)
 
 @router.get("", response_model=PaginatedResponse[ReportOut])
 async def list_reports(
+    db: DbSession,
     experiment_id: UUID | None = None,
-    page: int = Field(default=1, ge=1),
-    page_size: int = Field(default=20, ge=1, le=100),
-    db: AsyncSession = Depends(get_db),
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
     query = select(Report)
     count_query = select(func.count(Report.id))
@@ -60,13 +60,21 @@ async def list_reports(
     total = (await db.execute(count_query)).scalar_one()
     pages = max(1, math.ceil(total / page_size))
     offset = (page - 1) * page_size
-    result = await db.execute(query.order_by(Report.created_at.desc()).offset(offset).limit(page_size))
+    result = await db.execute(
+        query.order_by(Report.created_at.desc()).offset(offset).limit(page_size)
+    )
     items = [ReportOut.model_validate(r) for r in result.scalars().all()]
-    return PaginatedResponse(items=items, total=total, page=page, page_size=page_size, pages=pages)
+    return PaginatedResponse(
+        items=items, total=total, page=page, page_size=page_size, pages=pages
+    )
 
 
-@router.get("/{report_id}", response_model=ReportOut, responses={404: {"model": ErrorResponse}})
-async def get_report(report_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.get(
+    "/{report_id}",
+    response_model=ReportOut,
+    responses={404: {"model": ErrorResponse}},
+)
+async def get_report(report_id: UUID, db: DbSession):
     result = await db.execute(select(Report).where(Report.id == report_id))
     report = result.scalar_one_or_none()
     if report is None:
@@ -75,7 +83,7 @@ async def get_report(report_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{report_id}/download", responses={404: {"model": ErrorResponse}})
-async def download_report(report_id: UUID, db: AsyncSession = Depends(get_db)):
+async def download_report(report_id: UUID, db: DbSession):
     result = await db.execute(select(Report).where(Report.id == report_id))
     report = result.scalar_one_or_none()
     if report is None:

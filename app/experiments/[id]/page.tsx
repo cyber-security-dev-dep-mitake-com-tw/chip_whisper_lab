@@ -1,39 +1,29 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api-client";
+import { useExperiment, useTraces, useAttacks } from "@/lib/hooks";
 import { useParams } from "next/navigation";
 
 export default function ExperimentDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const { data: experiment, isLoading } = useQuery({
-    queryKey: ["experiment", id],
-    queryFn: () => api.getExperiment(id),
-  });
-  const { data: traces } = useQuery({
-    queryKey: ["traces", id],
-    queryFn: () => api.getTraces(id),
-  });
-  const { data: attacks } = useQuery({
-    queryKey: ["attacks", id],
-    queryFn: () => api.getAttacks(id),
-  });
+  const { data: experiment, loading } = useExperiment(id);
+  const { data: traces } = useTraces(id);
+  const { data: attacks } = useAttacks(id);
 
-  if (isLoading) return <p className="text-gray-500 p-6">Loading...</p>;
+  if (loading) return <p className="p-6 text-gray-500">Loading...</p>;
 
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-2">{experiment?.name}</h1>
-      <p className="text-gray-400 mb-6">{experiment?.description}</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <h1 className="mb-2 text-2xl font-bold text-white">{experiment.name}</h1>
+      <p className="mb-6 text-gray-400">{experiment.description}</p>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">Traces</h2>
-          <p className="text-gray-400">{traces?.total ?? 0} traces</p>
+          <h2 className="mb-3 text-lg font-semibold text-white">Traces</h2>
+          <p className="text-gray-400">{traces.length} traces</p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">Attacks</h2>
-          <p className="text-gray-400">{attacks?.total ?? 0} attacks</p>
+          <h2 className="mb-3 text-lg font-semibold text-white">Attacks</h2>
+          <p className="text-gray-400">{attacks.length} attacks</p>
         </div>
       </div>
     </main>

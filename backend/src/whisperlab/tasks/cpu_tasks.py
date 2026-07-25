@@ -6,8 +6,6 @@ from . import celery_app
 @celery_app.task(bind=True, name="whisperlab.run_cpa_attack")
 def run_cpa_attack(self, attack_id: str, config: dict) -> dict:
     """Run a Correlation Power Analysis attack."""
-    from ..services.attack_runner import ATTACK_TASK_MAP  # noqa: F811
-
     return {
         "attack_id": attack_id,
         "attack_type": "cpa",

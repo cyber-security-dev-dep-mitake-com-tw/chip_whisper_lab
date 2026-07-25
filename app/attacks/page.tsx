@@ -1,47 +1,37 @@
 "use client";
 
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api-client";
-import { useState } from "react";
 import { AttackBuilder } from "@/components/attack-builder";
 import { AttackMonitor } from "@/components/attack-monitor";
-import { useCreateAttack } from "@/lib/hooks";
+import { useAttacks } from "@/lib/hooks";
+import { useState } from "react";
 
 export default function AttacksPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["attacks"],
-    queryFn: api.getAttacks,
-  });
-  const create = useCreateAttack();
+  const { data, loading } = useAttacks();
   const [showBuilder, setShowBuilder] = useState(false);
+  const experimentId = data[0]?.experiment_id ?? "exp-001";
 
   return (
     <main className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Attacks</h1>
         <button
           onClick={() => setShowBuilder(!showBuilder)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           New Attack
         </button>
       </div>
       {showBuilder && (
         <div className="mb-6">
-          <AttackBuilder />
+          <AttackBuilder experimentId={experimentId} />
         </div>
       )}
-      {isLoading ? (
+      {loading ? (
         <p className="text-gray-500">Loading attacks...</p>
       ) : (
         <div className="space-y-4">
-          {data?.items.map((attack) => (
-            <AttackMonitor
-              key={attack.id}
-              attackId={attack.id}
-              status={attack.status}
-              attackType={attack.attackType}
-            />
+          {data.map((attack) => (
+            <AttackMonitor key={attack.id} attack={attack} />
           ))}
         </div>
       )}

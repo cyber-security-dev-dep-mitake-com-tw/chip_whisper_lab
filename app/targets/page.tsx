@@ -1,23 +1,19 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api-client";
 import { TargetCard } from "@/components/target-card";
+import { useTargets } from "@/lib/hooks";
 
 export default function TargetsPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["targets"],
-    queryFn: api.getTargets,
-  });
+  const { data, loading } = useTargets();
 
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-6">Targets</h1>
-      {isLoading ? (
+      <h1 className="mb-6 text-2xl font-bold text-white">Targets</h1>
+      {loading ? (
         <p className="text-gray-500">Loading targets...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data?.items.map((target) => (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {data.map((target) => (
             <TargetCard key={target.id} target={target} />
           ))}
         </div>

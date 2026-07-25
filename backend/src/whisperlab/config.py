@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -29,6 +30,10 @@ class Settings(BaseSettings):
     cors_origins: list[str] = Field(
         default=["http://127.0.0.1:3000", "http://localhost:3000"],
     )
+
+    enable_execution: bool = False
+    workspace_root: Path = Field(default=Path("/tmp/whisperlab-workspace"))
+    execution_timeout_seconds: int = Field(default=60, ge=1, le=3600)
 
 
 @lru_cache
