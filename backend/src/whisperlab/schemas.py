@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel, Field
@@ -26,7 +26,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     pages: int
 
 
-class CheckState(str, Enum):
+class CheckState(StrEnum):
     READY = "ready"
     MISSING = "missing"
     OPTIONAL = "optional"

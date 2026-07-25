@@ -78,7 +78,9 @@ def build_doctor_report() -> DoctorReport:
             label="Native Python",
             state=CheckState.READY if python_arch == "arm64" else CheckState.WARNING,
             detail=f"{platform.python_version()} · {python_arch}",
-            remediation=None if python_arch == "arm64" else "Recreate the environment with native arm64 Python.",
+            remediation=None
+            if python_arch == "arm64"
+            else "Recreate the environment with native arm64 Python.",
         ),
         DoctorCheck(
             key="chipwhisperer",

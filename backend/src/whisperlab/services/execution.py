@@ -14,6 +14,14 @@ class ExecutionDisabledError(RuntimeError):
     pass
 
 
+def _to_text(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
 class ExecutionService:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
@@ -74,8 +82,8 @@ class ExecutionService:
             except subprocess.TimeoutExpired as error:
                 return ExecutionResult(
                     exit_code=124,
-                    stdout=(error.stdout or "")[-100_000:],
-                    stderr=(error.stderr or "")[-100_000:],
+                    stdout=_to_text(error.stdout)[-100_000:],
+                    stderr=_to_text(error.stderr)[-100_000:],
                     timed_out=True,
                 )
 
