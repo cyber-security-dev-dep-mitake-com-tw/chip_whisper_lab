@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+echo "=== WhisperLab Docker Verification ==="
+echo "Building Docker images..."
+docker-compose build --parallel 2>&1 | tail -20
+echo ""
+echo "Starting services..."
+docker-compose up -d 2>&1
+echo ""
+echo "Waiting for services to be healthy..."
+sleep 5
+echo ""
+echo "=== Service Status ==="
+docker-compose ps
+echo ""
+echo "=== Backend Health Check ==="
+curl -sf http://localhost:8000/api/v1/health && echo "Backend: OK" || echo "Backend: FAILED"
+echo ""
+echo "=== Frontend Check ==="
+curl -sf http://localhost:3000 > /dev/null && echo "Frontend: OK" || echo "Frontend: FAILED (may need npm run dev first)"
+echo ""
+echo "=== Jupyter Check ==="
+curl -sf http://localhost:8888/api > /dev/null && echo "Jupyter: OK" || echo "Jupyter: FAILED"
+echo ""
+echo "=== PostgreSQL Check ==="
+docker-compose exec -T postgres pg_isready -U whisperlab && echo "PostgreSQL: OK" || echo "PostgreSQL: FAILED"
+echo ""
+echo "=== Redis Check ==="
+docker-compose exec -T redis redis-cli ping && echo "Redis: OK" || echo "Redis: FAILED"
+echo ""
+echo "=== MinIO Check ==="
+curl -sf http://localhost:9001 > /dev/null && echo "MinIO Console: OK" || echo "MinIO Console: FAILED"
+echo ""
+echo "Docker verification complete."
+echo "To stop: docker-compose down"
