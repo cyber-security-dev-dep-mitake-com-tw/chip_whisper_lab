@@ -139,7 +139,10 @@ services:
     environment:
       # Set via `.env` / deploy secret: token from the Cloudflare Zero Trust
       # dashboard for a tunnel routing to jupyterhub:8000 and backend:8000.
-      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in .env}
+      # Left empty by default so `docker compose config` (CI validation) and a
+      # first-time `up` don't hard-fail; cloudflared itself will error clearly
+      # at container start if TUNNEL_TOKEN is actually empty at runtime.
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
     depends_on:
       - jupyterhub
       - backend
