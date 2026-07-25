@@ -218,6 +218,16 @@ const MOCK_MODULES: Module[] = [
     difficulty: "beginner",
     duration: "60 min",
   },
+  {
+    id: "module-04-puf-trng",
+    title: "PUF & TRNG",
+    description:
+      "Physical Unclonable Functions and True Random Number Generators: RO-PUF, Arbiter PUF, SRAM PUF, ring-oscillator TRNGs, and entropy sources per NIST SP 800-90B.",
+    category: "hardware",
+    difficulty: "intermediate",
+    duration: "3 hours",
+    lab_url: "#",
+  },
 ];
 
 export function useExperiments() {

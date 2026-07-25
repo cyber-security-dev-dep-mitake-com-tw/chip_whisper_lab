@@ -33,7 +33,15 @@ const MODULES = [
 export default function LearnPage() {
   return (
     <main className="p-6">
-      <h1 className="text-3xl font-bold text-white mb-2">Curriculum</h1>
+      <div className="flex items-start justify-between mb-2">
+        <h1 className="text-3xl font-bold text-white">Curriculum</h1>
+        <Link
+          href="/learn/resources"
+          className="text-xs border border-gray-600 rounded px-3 py-1.5 text-gray-300 hover:border-gray-400 hover:text-white transition-colors"
+        >
+          📚 Beginner Resources (EN/中文)
+        </Link>
+      </div>
       <p className="text-gray-400 mb-6">25 modules covering all aspects of hardware security</p>
 
       <div className="mb-6 flex gap-4">
