@@ -1,33 +1,35 @@
-# Module 10: SCA Countermeasures
+# Module 10: Countermeasures Against Side-Channel Attacks
 
 ## Learning Objectives
+- Understand first-order and higher-order masking techniques
+- Explain hiding countermeasures: random delays, shuffling, and random pipeline stage insertion
+- Describe Threshold Implementations (TI) and their security guarantees
+- Analyze dual-rail logic and its effect on power leakage
+- Understand the difference between glitches and leakage in masked implementations
+- Evaluate countermeasure effectiveness using TVLA and CPA resistance metrics
 
-By the end of this module, you will be able to:
-
-1. Understand the core concepts of Masking
-2. Apply theoretical knowledge to practical scenarios
-3. Analyze real-world implementations and attacks
-4. Implement basic security measures and countermeasures
-5. Evaluate system security using industry standards
-
-## Time Estimate
-
-**4 hours**
+## Estimated Time
+3–4 hours
 
 ## Prerequisites
+- Module 06 (Side-Channel Analysis Theory)
+- Module 08 (AES S-box Leakage & DPA/CPA)
+- Basic probability and Boolean algebra
 
-- Module 09
+## Module Structure
+| File | Description |
+|------|-------------|
+| `theory.md` | Masking, hiding, TI, dual-rail logic, countermeasure evaluation |
+| `lab-simulated.ipynb` | Interactive masking simulation, CPA resistance analysis |
 
-## Module Content
+## Key Topics
+1. **Masking**: Boolean masking, first-order, higher-order, recombination
+2. **Hiding**: Random delays, shuffling, random pipeline insertion
+3. **Threshold Implementations**: Multi-party computation in hardware
+4. **Dual-Rail Logic**: WDDL, TDPL, constant power consumption
+5. **Evaluation Methodology**: TVLA, CPA resistance, number of traces required
 
-This module covers Masking, hiding, shuffling, threshold implementations. You will learn:
-
-- Fundamental concepts and principles
-- Real-world applications and case studies
-- Practical implementation techniques
-- Security analysis and evaluation methods
-- Best practices and industry standards
-
-## Next Steps
-
-After completing this module, continue to the next module in the curriculum sequence.
+## References
+- [Mangard, S. et al., Power Analysis Attacks (Springer, 2007)](https://doi.org/10.1007/978-0-387-68901-2)
+- [Prouff and Rivain, "A Generic Security Proof for Masking" (2009)](https://eprint.iacr.org/2009/123)
+- [NIST SP 800-90B](https://csrc.nist.gov/publications/detail/sp/800-90b/final)

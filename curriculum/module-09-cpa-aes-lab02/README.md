@@ -1,33 +1,33 @@
-# Module 09: CPA on AES Lab 02
+# Module 09: Full CPA Attack Walkthrough with ChipWhisperer Analyzer
 
 ## Learning Objectives
+- Configure the ChipWhisperer Analyzer leakage model for AES CPA
+- Run a complete CPA attack using the ChipWhisperer Analyzer GUI/API
+- Interpret correlation heatmaps and identify the correct key bytes
+- Recover the full 128-bit AES key from power traces
+- Calculate Probability of Guessing Entropy (PGE) to evaluate attack success
 
-By the end of this module, you will be able to:
-
-1. Understand the core concepts of Full CPA attack execution
-2. Apply theoretical knowledge to practical scenarios
-3. Analyze real-world implementations and attacks
-4. Implement basic security measures and countermeasures
-5. Evaluate system security using industry standards
-
-## Time Estimate
-
-**5 hours**
+## Estimated Time
+3–4 hours
 
 ## Prerequisites
+- Module 08 (AES S-box Leakage & DPA/CPA)
+- ChipWhisperer hardware (or simulated traces from Module 08)
 
-- Module 08
+## Module Structure
+| File | Description |
+|------|-------------|
+| `theory.md` | ChipWhisperer Analyzer workflow, PGE calculation, attack evaluation |
+| `lab-simulated.ipynb` | Full CPA attack walkthrough with correlation analysis |
 
-## Module Content
+## Key Topics
+1. **ChipWhisperer Analyzer**: GUI and API workflow for CPA
+2. **Leakage Model Configuration**: Setting up S-box leakage model
+3. **Attack Execution**: Running the CPA attack on captured traces
+4. **Correlation Heatmap**: Visualizing attack results
+5. **PGE Calculation**: Evaluating key recovery confidence
 
-This module covers Full CPA attack execution, result interpretation. You will learn:
-
-- Fundamental concepts and principles
-- Real-world applications and case studies
-- Practical implementation techniques
-- Security analysis and evaluation methods
-- Best practices and industry standards
-
-## Next Steps
-
-After completing this module, continue to the next module in the curriculum sequence.
+## References
+- [ChipWhisperer Analyzer Documentation](https://chipwhisperer.readthedocs.io/en/latest/analyzer.html)
+- [NewAE sca101 Lab 4_3: CPA Attack](https://github.com/newaetech/chipwhisperer-jupyter)
+- [NewAE sca101 Lab 5_1: CPA Results](https://github.com/newaetech/chipwhisperer-jupyter)
