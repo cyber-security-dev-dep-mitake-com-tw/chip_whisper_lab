@@ -283,6 +283,39 @@ $$
 
 **Bias:** Deviation from 50/50 distribution; typically < 1% for good TRNGs
 
+### 3.7 Beginner Primer: The Entropy Source as a System
+
+Sections 3.2–3.5 above derive the physics and statistics of individual noise mechanisms. It helps to also see how those pieces compose into a single **entropy source**, since that is the unit NIST SP 800-90B actually certifies and the unit a TRNG designer builds. An entropy source is not just "a noisy circuit" — per NIST SP 800-90B it is always three cooperating parts:
+
+1. **Noise source** — the physical process that actually contains unpredictability (thermal noise, RO jitter, metastability, etc.).
+2. **Health tests** — continuous, real-time checks that the noise source has not silently failed, degraded, or come under attack (e.g. glitching, temperature manipulation, EM injection). A noise source with no health tests cannot be trusted, because a stuck-at fault or an adversarial fault injection can silently collapse its entropy to near zero while still producing plausible-looking bits.
+3. **Optional conditioning** — a post-processing step (von Neumann debiasing, XOR combination, or a cryptographic hash/AES compression) that removes bias and correlation from the raw noise samples before they are used.
+
+**Comparison of common physical noise sources** (consolidating §3.2 into one design-reference table):
+
+| Noise Source | Physical Origin | Typical Implementation | Trade-offs |
+|---|---|---|---|
+| Thermal (Johnson-Nyquist) noise | Random electron motion in a resistor | Amplifier + comparator/ADC sampling | Stable, well-understood; slow, sensitive to temperature drift |
+| Clock/RO jitter | Oscillator phase instability | Multiple ring oscillators sampled/XORed against each other | Fully digital, easy to integrate in FPGA/ASIC; inter-RO correlation must be checked |
+| Metastability | Flip-flop resolving an asynchronous transition | Dual-clock or delay-line circuits forced into the metastable window | High bit rate; requires careful timing closure to avoid systematic bias |
+| Ring oscillator (RO) array | Accumulated jitter across chained inverters | Phase difference sampling across many ROs | The most common practical digital TRNG primitive; needs enough independent ROs to avoid shared-noise correlation |
+| Shot noise / other (optical, RF, quantum) | Discrete-charge or quantum-level effects | Photodiodes, RF front-ends, quantum-optical setups | Very high quality entropy; higher cost and complexity, rarely used in commodity chips |
+
+**Extraction pipeline** — from raw physics to a usable random bit:
+
+```
+physical noise → digitizer (ADC / comparator)
+              → raw bitstream (biased, possibly correlated)
+              → health tests (repetition count test, adaptive proportion test, §3.4)
+              → conditioning (von Neumann debiasing / XOR / hash / AES compression)
+              → min-entropy estimation (H∞, §3.4)
+              → seed for a DRBG (NIST SP 800-90A, e.g. AES-CTR DRBG) or direct key material
+```
+
+The min-entropy estimate from the last-but-one step is what determines how many raw bits must be consumed to produce one bit of usable, cryptographically strong output — this is why a "TRNG" is really a certified pipeline, not just a noisy wire.
+
+*Further reading, free downloadable references (CyBOK, NIST SP 800-90B, RISC-V Entropy Source Interface), and a Chinese-language (中文) video course on this exact pipeline are collected in [`curriculum/resources/hardware-security-beginner-resources.md`](../resources/hardware-security-beginner-resources.md).*
+
 ## 4. Side-Channel Relevance
 
 ### 4.1 PUF as Side-Channel Target

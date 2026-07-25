@@ -34,6 +34,10 @@ This curriculum covers 25 modules on hardware security, side-channel analysis, f
 | 23 | Cryo-CMOS & QPU | Cryogenic electronics, QPU security, quantum computing hardware | 3 hours | Module 22 |
 | 24 | BQC + TEE | Blind quantum computing, TEE integration, quantum-resistant systems | 4 hours | Module 17, Module 22 |
 
+## Supplementary Resources
+
+- [Beginner Hardware Security Resources / 晶片安全入門教材與資源](resources/hardware-security-beginner-resources.md) — a curated, free reading list (English + Chinese) for learners starting out, including entropy-source (熵源) material that complements Module 04.
+
 ## Getting Started
 
 1. Start with Module 00 to set up your environment
