@@ -1,98 +1,266 @@
-# vinext-starter
+# WhisperLab — Hardware Security Research Platform
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+A comprehensive, local-first hardware security research and learning platform for Apple Silicon (M1/M2/M3). Build, capture, and analyze side-channel attacks and fault injection experiments using ChipWhisperer with a modern web UI.
 
-## Prerequisites
+## Overview
 
-- Node.js `>=22.13.0`
+WhisperLab provides:
+- **Hardened macOS installer** for ChipWhisperer development on Apple Silicon
+- **25-module curriculum** covering chip security, SCA, fault injection, hardware RE, PQC, quantum security, and more
+- **Full-stack web application** (Next.js + FastAPI) for experiment orchestration and analysis
+- **CI/CD pipeline** with Robot Framework testing and multi-platform releases
 
 ## Quick Start
 
+### Prerequisites
+- macOS 14+ (Apple Silicon required)
+- Homebrew
+- ~5 GB free disk space
+
+### Installation
+
 ```bash
-npm install
-npm run dev
-npm run build
+# 1. Clone the repository
+git clone https://github.com/cyber-security-dev-dep-mitake-com-tw/chip_whisper_lab.git
+cd chip_whisper_lab
+
+# 2. Run the installer (simulator mode, no hardware needed)
+./scripts/install-macos.sh --simulator-only --yes
+
+# 3. Start the full platform
+./scripts/start-whisperlab.sh
+# → Frontend: http://localhost:3000
+# → Backend API: http://localhost:8000/api/docs
+# → Jupyter: http://localhost:8888
 ```
 
-This starter does not use `wrangler.jsonc`.
-
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+### Docker (Alternative)
+```bash
+docker-compose up -d
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+## Project Structure
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+```
+chip_whisper/
+├── scripts/                  # Installation and utility scripts
+│   ├── install-macos.sh      # macOS installer (Homebrew + uv + Conda fallback)
+│   ├── doctor-macos.sh       # Environment health check + JSON report
+│   ├── start-jupyter.sh      # Launch ChipWhisperer Jupyter Lab
+│   └── start-whisperlab.sh   # Launch full WhisperLab platform
+├── curriculum/               # 25 learning modules (00-24)
+│   ├── module-00-setup/      # Environment setup
+│   ├── module-01-chipsec-landscape/  # FIPS 140-3, CMVP, attack taxonomy
+│   ├── module-02-symmetric-hash/     # AES, SHA-2/3, modes
+│   ├── module-03-asymmetric-pqc/     # RSA, ECC, PQC (Kyber, Dilithium)
+│   ├── module-04-puf-trng/           # PUF types, TRNG, entropy
+│   ├── module-05-secure-boot/        # Measured boot, attack cases
+│   ├── module-06-sca-theory/         # SPA, DPA, CPA math
+│   ├── module-07-cw-lite-lab01/      # CW-Lite platform, capture
+│   ├── module-08-aes-dpa-cpa/        # AES DPA/CPA deep dive
+│   ├── module-09-cpa-aes-lab02/      # CPA on AES full attack
+│   ├── module-10-countermeasures/    # Masking, hiding, shuffling
+│   ├── module-11-fault-glitching/    # Voltage & clock glitching
+│   ├── module-12-emfi-lfi/           # EMFI & laser fault injection
+│   ├── module-13-fault-analysis/     # DFA, fault models, defenses
+│   ├── module-14-jtag-swd/           # JTAG/SWD attacks, RDP bypass
+│   ├── module-15-hw-reverse/         # Decap, FIB, active shields
+│   ├── module-16-hw-trojans/         # Trust-Hub, detection, counterfeits
+│   ├── module-17-tee-microarch/      # TrustZone, SGX, PMP
+│   ├── module-18-cache-sc/           # Flush+Reload, Prime+Probe
+│   ├── module-19-transient-exec/     # Spectre, Meltdown, Rowhammer
+│   ├── module-20-pqc-hw/             # PQC hardware + SCA/FIA on PQC
+│   ├── module-21-qkd/                # QKD security (SPAD blinding)
+│   ├── module-22-qpuf/               # Quantum PUF via IBM Quantum
+│   ├── module-23-cryo-cmos/          # Cryo-CMOS & QPU security
+│   └── module-24-bqc-tee/            # Blind QC + TEE integration
+├── backend/                  # FastAPI + Celery backend
+│   ├── src/whisperlab/
+│   │   ├── api/              # Routers: experiments, traces, attacks, targets, reports
+│   │   ├── models/           # SQLAlchemy: Experiment, Trace, Attack, Target, Report
+│   │   ├── services/         # CaptureService, TraceService, AttackRunner
+│   │   ├── tasks/            # Celery tasks: CPA, DPA, Template, Glitch, DFA
+│   │   ├── config.py         # Settings (DATABASE_URL, REDIS_URL, etc.)
+│   │   ├── db.py             # Async SQLAlchemy engine + session
+│   │   ├── schemas.py        # Pydantic response schemas
+│   │   └── main.py           # FastAPI app setup + router includes
+│   ├── pyproject.toml        # Python project config + dependencies
+│   ├── alembic.ini           # Alembic migration config
+│   ├── alembic/              # Alembic migration scripts
+│   └── Dockerfile            # Multi-stage Docker build
+├── app/                      # Next.js 16 + React 19 frontend
+│   ├── app/                  # App Router pages (dashboard, experiments, traces, attacks...)
+│   ├── components/           # React components (sidebar, cards, trace viewer...)
+│   ├── lib/                  # API client, TanStack Query hooks, types
+│   └── globals.css           # Tailwind CSS styles
+├── tests/
+│   ├── robot/                # Robot Framework suites (installer, doctor, API)
+│   ├── backend/              # Backend pytest integration tests
+│   └── integration/          # Integration test suites
+├── .github/workflows/        # CI/CD (ci.yml, release.yml)
+├── docker-compose.yml        # Multi-service development environment
+├── Dockerfile.jupyter        # Jupyter kernel with ChipWhisperer
+├── Makefile                  # Dev/CI/release commands
+├── IMPLEMENTATION_PLAN.md    # Detailed implementation roadmap
+└── MASTER_PLAN.md            # Master project plan
+```
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+## Curriculum Modules
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+| # | Module | Duration | Category |
+|---|--------|----------|----------|
+| 00 | Environment Setup | 1 hr | Setup |
+| 01 | Chip Security Landscape | 2 hrs | Theory |
+| 02 | Symmetric Crypto & Hash | 3 hrs | Cryptography |
+| 03 | Asymmetric & PQC | 3 hrs | Cryptography |
+| 04 | PUF & TRNG | 3 hrs | Hardware Trust |
+| 05 | Secure Boot & Auth | 3 hrs | Boot Security |
+| 06 | SCA Theory (SPA/DPA/CPA) | 4 hrs | Side-Channel |
+| 07 | CW-Lite Lab 01 | 4 hrs | Lab |
+| 08 | AES DPA/CPA Deep Dive | 4 hrs | Lab |
+| 09 | CPA on AES Lab 02 | 4 hrs | Lab |
+| 10 | SCA Countermeasures | 3 hrs | Defense |
+| 11 | Voltage & Clock Glitching | 4 hrs | Fault Injection |
+| 12 | EMFI & Laser (LFI) | 3 hrs | Fault Injection |
+| 13 | DFA & Fault Defenses | 4 hrs | Fault Injection |
+| 14 | JTAG/SWD Attacks & RDP Bypass | 4 hrs | HW RE |
+| 15 | HW Reverse Engineering | 3 hrs | HW RE |
+| 16 | Hardware Trojans & Supply Chain | 3 hrs | Supply Chain |
+| 17 | TEE & Microarch Security | 4 hrs | TEE |
+| 18 | Cache Side-Channels | 4 hrs | Microarch |
+| 19 | Transient Execution | 3 hrs | Microarch |
+| 20 | PQC Hardware + SCA/FIA | 4 hrs | PQC |
+| 21 | QKD Device Security | 2 hrs | Quantum |
+| 22 | Quantum PUF (IBM) | 3 hrs | Quantum |
+| 23 | Cryo-CMOS & QPU | 2 hrs | Quantum |
+| 24 | Blind QC + TEE | 2 hrs | Quantum |
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+## API Reference
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+### Backend (FastAPI)
+Base URL: `http://localhost:8000/api/v1`
 
-## Useful Commands
+| Resource | Endpoints |
+|----------|-----------|
+| Experiments | `GET/POST /experiments`, `GET/PATCH/DELETE /experiments/{id}` |
+| Traces | `POST /traces/upload`, `GET /traces`, `GET /traces/{id}`, `GET /traces/{id}/download` |
+| Attacks | `POST /attacks`, `GET /attacks`, `GET /attacks/{id}`, `GET /attacks/{id}/results` |
+| Targets | `GET/POST /targets`, `POST /targets/{id}/flash`, `POST /targets/{id}/test` |
+| Reports | `POST /reports`, `GET /reports`, `GET /reports/{id}`, `GET /reports/{id}/download` |
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+### Frontend
+| Page | Route |
+|------|-------|
+| Dashboard | `/` |
+| Experiments | `/experiments` |
+| Traces | `/traces` |
+| Attacks | `/attacks` |
+| Targets | `/targets` |
+| Reports | `/reports` |
+| Curriculum | `/learn` |
+| Module Detail | `/learn/module-XX-name` |
 
-## Learn More
+## CI/CD
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+### Pull Request Validation
+Automatically runs on every PR:
+- Shellcheck + shfmt (scripts)
+- Ruff (backend Python)
+- ESLint (frontend TypeScript)
+- MyPy type checking (backend)
+- `tsc --noEmit` (frontend)
+- pytest (backend unit tests)
+- Robot Framework (installer + doctor tests)
+
+### Release Pipeline
+Tagged releases automatically build:
+- macOS `.pkg` + `.dmg` (installer)
+- Windows `.exe` + `.msi`
+- Docker images (linux/amd64 + linux/arm64) via GHCR
+
+### Running Tests Locally
+```bash
+make test              # Run all tests
+make test-backend      # Backend unit + integration tests
+make test-frontend     # Frontend tests
+make test-robot        # Robot Framework suites
+make test-ci           # Full CI-equivalent test suite
+```
+
+## Hardware Support
+
+| Board | Status | Notes |
+|-------|--------|-------|
+| ChipWhisperer-Lite | Simulator-ready | Power analysis + glitch labs (simulated) |
+| ESP32-S3 | Supported | UART/JTAG debug, firmware flashing |
+| CW-Nano | Simulator-ready | Via simulated traces |
+| CW-Pro/Husky | Not yet | Planned for v2 |
+
+## Learning Paths
+
+### Path A: Side-Channel Analysis (8 weeks)
+Modules 00 → 01 → 02 → 06 → 07 → 08 → 09 → 10
+
+### Path B: Fault Injection (6 weeks)
+Modules 00 → 01 → 05 → 11 → 12 → 13
+
+### Path C: Hardware RE (4 weeks)
+Modules 00 → 01 → 14 → 15 → 16
+
+### Path D: TEE & Microarch Security (4 weeks)
+Modules 00 → 01 → 17 → 18 → 19
+
+### Path E: Advanced Research (ongoing)
+Modules 20 → 21 → 22 → 23 → 24
+
+## Key Tools Used
+- **ChipWhisperer v6** — SCA and fault injection framework
+- **uv** — Fast Python package/venv manager
+- **Homebrew** — macOS package management
+- **Miniforge/Conda** — M1 libusb arch-compatible Python
+- **FastAPI** — Async Python API framework
+- **Next.js 16 + React 19** — Modern frontend
+- **Tailwind CSS v4** — Utility-first styling
+- **Celery + Redis** — Async task queue for attack computation
+- **PostgreSQL + pgvector** — Database with vector support
+- **MinIO** — S3-compatible object storage
+- **Robot Framework** — Test automation framework
+- **GitHub Actions** — CI/CD pipeline
+
+## References & Further Reading
+
+### Hardware Hacking
+- O'Flynn, C. & Chen, Z.D. (2021). *The Hardware Hacking Handbook*. No Starch Press.
+- Riscure Fault Injection Testing Guidelines (2022).
+
+### Standards
+- NIST SP 800-193 (Platform Firmware Resiliency)
+- FIPS 140-3 (Cryptographic Module Security)
+- GlobalPlatform TEE System Architecture
+- NIST FIPS 203 (ML-KEM), FIPS 204 (ML-DSA)
+
+### Research Papers
+- VUSec (Rowhammer): https://www.vusec.net/
+- Lipp, M., et al. (2018). "Meltdown." USENIX Security.
+- Kocher, P., et al. (2019). "Spectre Attacks." IEEE S&P.
+- Yarom, Y. (2014). "FLUSH+RELOAD." USENIX Security.
+
+### Hardware Security
+- Trust-Hub: https://trust-hub.org/
+- Tehranipoor, M. et al. (2011). *Introduction to Hardware Security and Trust*. Springer.
+- Confidential Computing Consortium: https://confidentialcomputingconsortium.org/
+
+## License
+MIT License — See LICENSE file for details.
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## Getting Help
+- Check the `IMPLEMENTATION_PLAN.md` for detailed implementation details
+- Check the `MASTER_PLAN.md` for project scope and roadmap
+- Open a GitHub Issue for bug reports or feature requests
