@@ -12,6 +12,16 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Non-JS/TS project content that must never be linted: a Python
+    // virtualenv (bundled JS assets inside site-packages crash ESLint's
+    // formatter with huge minified files), vendored third-party source, and
+    // build/tooling output.
+    "node_modules/**",
+    ".venv/**",
+    ".vendor/**",
+    ".wrangler/**",
+    ".vinext/**",
+    "dist/**",
   ]),
 ]);
 
