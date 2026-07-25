@@ -1,141 +1,79 @@
 "use client";
 
-import { useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { useModules } from "@/lib/hooks";
 import Link from "next/link";
 
-const CATEGORIES = ["all", "fundamentals", "attacks", "hardware", "advanced"] as const;
-const DIFFICULTIES = ["all", "beginner", "intermediate", "advanced"] as const;
-
-const difficultyColors: Record<string, string> = {
-  beginner: "border-[#3f7547] text-[var(--green)]",
-  intermediate: "border-[#6b5b34] text-[var(--amber)]",
-  advanced: "border-[#6b3434] text-[var(--red)]",
-};
+const MODULES = [
+  { id: "module-00-setup", title: "Environment Setup", category: "Setup", difficulty: "Beginner", duration: "1 hour" },
+  { id: "module-01-chipsec-landscape", title: "Chip Security Landscape", category: "Theory", difficulty: "Beginner", duration: "2 hours" },
+  { id: "module-02-symmetric-hash", title: "Symmetric Crypto & Hash Functions", category: "Cryptography", difficulty: "Beginner", duration: "3 hours" },
+  { id: "module-03-asymmetric-pqc", title: "Asymmetric & PQC", category: "Cryptography", difficulty: "Intermediate", duration: "3 hours" },
+  { id: "module-04-puf-trng", title: "PUF & TRNG", category: "Hardware Trust", difficulty: "Intermediate", duration: "3 hours" },
+  { id: "module-05-secure-boot", title: "Secure Boot & Authentication", category: "Boot Security", difficulty: "Intermediate", duration: "3 hours" },
+  { id: "module-06-sca-theory", title: "SCA Theory (SPA/DPA/CPA)", category: "Side-Channel", difficulty: "Intermediate", duration: "4 hours" },
+  { id: "module-07-cw-lite-lab01", title: "CW-Lite Platform & Lab 01", category: "Lab", difficulty: "Intermediate", duration: "4 hours" },
+  { id: "module-08-aes-dpa-cpa", title: "AES DPA/CPA Deep Dive", category: "Lab", difficulty: "Advanced", duration: "4 hours" },
+  { id: "module-09-cpa-aes-lab02", title: "CPA on AES Lab 02", category: "Lab", difficulty: "Advanced", duration: "4 hours" },
+  { id: "module-10-countermeasures", title: "SCA Countermeasures", category: "Defense", difficulty: "Advanced", duration: "3 hours" },
+  { id: "module-11-fault-glitching", title: "Voltage & Clock Glitching", category: "Fault Injection", difficulty: "Intermediate", duration: "4 hours" },
+  { id: "module-12-emfi-lfi", title: "EMFI & Laser Fault Injection", category: "Fault Injection", difficulty: "Advanced", duration: "3 hours" },
+  { id: "module-13-fault-analysis", title: "Fault Analysis & Defenses (DFA)", category: "Fault Injection", difficulty: "Advanced", duration: "4 hours" },
+  { id: "module-14-jtag-swd", title: "JTAG/SWD Attacks & RDP Bypass", category: "Hardware RE", difficulty: "Intermediate", duration: "4 hours" },
+  { id: "module-15-hw-reverse", title: "Hardware RE (Decap, FIB, Active Shield)", category: "Hardware RE", difficulty: "Advanced", duration: "3 hours" },
+  { id: "module-16-hw-trojans", title: "Hardware Trojans & Supply Chain", category: "Supply Chain", difficulty: "Advanced", duration: "3 hours" },
+  { id: "module-17-tee-microarch", title: "TEE & Microarchitecture Security", category: "TEE", difficulty: "Advanced", duration: "4 hours" },
+  { id: "module-18-cache-sc", title: "Cache Side-Channel Attacks", category: "Microarch", difficulty: "Advanced", duration: "4 hours" },
+  { id: "module-19-transient-exec", title: "Transient Execution (Spectre, Meltdown)", category: "Microarch", difficulty: "Advanced", duration: "3 hours" },
+  { id: "module-20-pqc-hw", title: "PQC Hardware Acceleration + SCA/FIA", category: "PQC", difficulty: "Advanced", duration: "4 hours" },
+  { id: "module-21-qkd", title: "QKD Device Security", category: "Quantum", difficulty: "Advanced", duration: "2 hours" },
+  { id: "module-22-qpuf", title: "Quantum PUF (IBM Quantum)", category: "Quantum", difficulty: "Advanced", duration: "3 hours" },
+  { id: "module-23-cryo-cmos", title: "Cryo-CMOS & QPU Security", category: "Quantum", difficulty: "Advanced", duration: "2 hours" },
+  { id: "module-24-bqc-tee", title: "Blind Quantum Computing + TEE", category: "Quantum", difficulty: "Advanced", duration: "2 hours" },
+];
 
 export default function LearnPage() {
-  const { data: modules, loading } = useModules();
-  const [category, setCategory] = useState<string>("all");
-  const [difficulty, setDifficulty] = useState<string>("all");
-
-  const filtered = modules.filter(
-    (m) =>
-      (category === "all" || m.category === category) &&
-      (difficulty === "all" || m.difficulty === difficulty),
-  );
-
   return (
-    <main className="lab-shell">
-      <Sidebar />
-      <section className="workspace">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">EDUCATION</p>
-            <h1>Learn</h1>
-          </div>
-        </header>
+    <main className="p-6">
+      <h1 className="text-3xl font-bold text-white mb-2">Curriculum</h1>
+      <p className="text-gray-400 mb-6">25 modules covering all aspects of hardware security</p>
 
-        <div className="p-6 space-y-6">
-          <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[var(--green)]">
-              Curriculum
-            </p>
-            <h2 className="mt-2 text-[18px] font-medium text-[var(--ink)]">
-              Side-Channel Analysis Curriculum
-            </h2>
-            <p className="mt-2 text-[12px] text-[var(--muted)] leading-relaxed max-w-2xl">
-              Master power analysis, fault injection, and hardware security through
-              hands-on labs with real ChipWhisperer hardware. Each module includes
-              theory, interactive notebooks, and practical exercises.
-            </p>
-          </div>
+      <div className="mb-6 flex gap-4">
+        <select className="bg-gray-800 text-gray-200 border border-gray-600 rounded p-2">
+          <option value="">All Categories</option>
+          <option value="Theory">Theory</option>
+          <option value="Lab">Lab</option>
+          <option value="Fault Injection">Fault Injection</option>
+          <option value="Hardware RE">Hardware RE</option>
+          <option value="Supply Chain">Supply Chain</option>
+          <option value="TEE">TEE</option>
+          <option value="Microarch">Microarchitecture</option>
+          <option value="PQC">PQC</option>
+          <option value="Quantum">Quantum</option>
+          <option value="Cryptography">Cryptography</option>
+          <option value="Defense">Defense</option>
+          <option value="Boot Security">Boot Security</option>
+          <option value="Hardware Trust">Hardware Trust</option>
+          <option value="Setup">Setup</option>
+        </select>
+        <select className="bg-gray-800 text-gray-200 border border-gray-600 rounded p-2">
+          <option value="">All Levels</option>
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+        </select>
+      </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[9px] font-mono uppercase tracking-wider text-[var(--dim)] mr-1">
-              Category:
-            </span>
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCategory(c)}
-                className={`rounded-lg border px-3 py-1.5 text-[10px] font-mono transition ${
-                  category === c
-                    ? "border-[var(--green)] bg-[#17221d] text-[var(--green)]"
-                    : "border-[var(--line)] bg-transparent text-[var(--muted)] hover:border-[#3a5245]"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-            <div className="w-px h-4 bg-[var(--line)] mx-1" />
-            <span className="text-[9px] font-mono uppercase tracking-wider text-[var(--dim)] mr-1">
-              Level:
-            </span>
-            {DIFFICULTIES.map((d) => (
-              <button
-                key={d}
-                onClick={() => setDifficulty(d)}
-                className={`rounded-lg border px-3 py-1.5 text-[10px] font-mono transition ${
-                  difficulty === d
-                    ? "border-[var(--green)] bg-[#17221d] text-[var(--green)]"
-                    : "border-[var(--line)] bg-transparent text-[var(--muted)] hover:border-[#3a5245]"
-                }`}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-48 animate-pulse rounded-xl border border-[var(--line)] bg-[var(--panel)]"
-                />
-              ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {MODULES.map(mod => (
+          <Link key={mod.id} href={`/learn/${mod.id}`} className="block border border-gray-700 rounded-lg p-4 bg-gray-900 hover:border-gray-500 transition-colors">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">{mod.category}</span>
+              <span className="text-xs text-gray-400">{mod.difficulty}</span>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((mod) => (
-                <Link
-                  key={mod.id}
-                  href={`/learn/${mod.id}`}
-                  className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5 transition hover:border-[#3a5245] hover:bg-[#1a2620]"
-                >
-                  <div className="mb-3 flex items-center justify-between">
-                    <span
-                      className={`rounded-md border px-2 py-0.5 text-[9px] font-mono ${difficultyColors[mod.difficulty]}`}
-                    >
-                      {mod.difficulty}
-                    </span>
-                    <span className="text-[10px] font-mono text-[var(--dim)]">
-                      {mod.duration}
-                    </span>
-                  </div>
-                  <h3 className="text-[14px] font-medium text-[var(--ink)] leading-snug">
-                    {mod.title}
-                  </h3>
-                  <p className="mt-2 text-[11px] text-[var(--muted)] leading-relaxed line-clamp-2">
-                    {mod.description}
-                  </p>
-                  <div className="mt-3 flex items-center gap-2">
-                    <span className="rounded bg-[#1c2922] px-1.5 py-0.5 text-[9px] font-mono text-[var(--muted)] border border-[#2a3a30]">
-                      {mod.category}
-                    </span>
-                    {mod.lab_url && (
-                      <span className="rounded bg-[#17221d] px-1.5 py-0.5 text-[9px] font-mono text-[var(--green)] border border-[#3f7547]">
-                        Lab available
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+            <h3 className="font-semibold text-white mb-1">{mod.title}</h3>
+            <p className="text-xs text-gray-500">{mod.duration}</p>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }
