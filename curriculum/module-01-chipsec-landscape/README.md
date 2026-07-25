@@ -1,33 +1,33 @@
 # Module 01: Chip Security Landscape
 
 ## Learning Objectives
+- Understand the FIPS 140-3 evaluation framework and CMVP certification process
+- Distinguish between Common Criteria assurance levels (EAL1–EAL7)
+- Classify attacks as passive (side-channel) vs. active (fault injection, probing)
+- Analyze real-world hardware security incidents (Spectre, Meltdown, Rowhammer, Heartbleed)
+- Navigate NIST publications relevant to hardware security
 
-By the end of this module, you will be able to:
-
-1. Explain FIPS 140-3 standards and certification requirements
-2. Describe the CMVP validation process for cryptographic modules
-3. Categorize different types of hardware attacks
-4. Understand security evaluation methodologies
-5. Identify common vulnerabilities in chip implementations
-
-## Time Estimate
-
-**3 hours**
+## Estimated Time
+2–3 hours
 
 ## Prerequisites
+- Module 00 (Environment Setup)
+- Basic understanding of computer architecture (CPU, memory, bus)
+- Familiarity with symmetric and asymmetric cryptography (helpful but not required)
 
-- Module 00: Environment Setup & ChipWhisperer Introduction
+## Module Structure
+| File | Description |
+|------|-------------|
+| `theory.md` | Comprehensive coverage of chip security standards and attack taxonomy |
+| `lab-simulated.ipynb` | Interactive analysis of vulnerability databases and attack classification |
 
-## Module Content
+## Key Topics
+1. **Standards & Certification**: FIPS 140-3, CMVP, Common Criteria, GlobalPlatform
+2. **Attack Taxonomy**: Passive vs. active, invasive vs. non-invasive, logical vs. physical
+3. **Case Studies**: Spectre/Meltdown (speculative execution), Rowhammer (DRAM), Heartbleed (software)
+4. **Regulatory Landscape**: NIST SP 800-57, NIST SP 800-175B
 
-This module provides an overview of the chip security landscape, covering:
-
-- FIPS 140-3 and CMVP certification requirements
-- Attack taxonomy and classification
-- Security evaluation methodologies
-- Industry standards and best practices
-- Real-world case studies of security failures
-
-## Next Steps
-
-After completing this module, proceed to Module 02: Symmetric Crypto & Hash Functions.
+## References
+- [NIST FIPS 140-3](https://csrc.nist.gov/publications/detail/fips/140/3/final)
+- [Common Criteria Portal](https://www.commoncriteriaportal.org/)
+- [ChipWhisperer Threat Model](https://chipwhisperer.readthedocs.io/en/latest/)
