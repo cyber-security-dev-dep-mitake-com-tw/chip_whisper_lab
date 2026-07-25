@@ -1,33 +1,34 @@
 # Module 06: Side-Channel Analysis Theory
 
 ## Learning Objectives
+- Understand Simple Power Analysis (SPA) and how instruction execution patterns leak secrets
+- Explain Differential Power Analysis (DPA) and how statistical methods recover keys
+- Apply Correlation Power Analysis (CPA) using the Pearson correlation coefficient
+- Understand the Hamming Weight and Hamming Distance leakage models
+- Perform leakage assessment using Test Vector Leakage Assessment (TVLA)
 
-By the end of this module, you will be able to:
-
-1. Understand the core concepts of SPA
-2. Apply theoretical knowledge to practical scenarios
-3. Analyze real-world implementations and attacks
-4. Implement basic security measures and countermeasures
-5. Evaluate system security using industry standards
-
-## Time Estimate
-
-**5 hours**
+## Estimated Time
+3–4 hours
 
 ## Prerequisites
+- Module 02 (Symmetric Cryptography & Hash Functions)
+- Basic statistics (correlation, standard deviation, mean)
+- Python/NumPy familiarity
 
-- Module 02
+## Module Structure
+| File | Description |
+|------|-------------|
+| `theory.md` | Mathematical foundations of SPA, DPA, CPA, and leakage models |
+| `lab-simulated.ipynb` | Interactive power trace analysis and CPA attack simulation |
 
-## Module Content
+## Key Topics
+1. **SPA**: Visual pattern recognition in power traces
+2. **DPA**: Differential analysis with selection functions
+3. **CPA**: Pearson correlation-based key recovery
+4. **Leakage Models**: HW, HD, and their mathematical formulations
+5. **TVLA**: Statistical leakage assessment methodology
 
-This module covers SPA, DPA, CPA math, side-channel analysis fundamentals. You will learn:
-
-- Fundamental concepts and principles
-- Real-world applications and case studies
-- Practical implementation techniques
-- Security analysis and evaluation methods
-- Best practices and industry standards
-
-## Next Steps
-
-After completing this module, continue to the next module in the curriculum sequence.
+## References
+- [Kocher, P. et al., "Power Analysis of Implementations of DES"](https://doi.org/10.1007/3-540-48285-7_1)
+- [Mangard, S. et al., Power Analysis Attacks (Springer, 2007)](https://doi.org/10.1007/978-0-387-68901-2)
+- [NIST SP 800-90B](https://csrc.nist.gov/publications/detail/sp/800-90b/final)

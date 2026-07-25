@@ -1,33 +1,34 @@
-# Module 07: CW-Lite Platform & Lab 01
+# Module 07: ChipWhisperer-Lite Hardware & First Lab
 
 ## Learning Objectives
+- Understand the ChipWhisperer-Lite hardware architecture and components
+- Configure the ChipWhisperer scope for power trace acquisition
+- Set up the target board and simpleserial protocol
+- Capture and visualize power traces from a cryptographic operation
+- Observe instruction-level differences in power traces
 
-By the end of this module, you will be able to:
-
-1. Understand the core concepts of Scope setup
-2. Apply theoretical knowledge to practical scenarios
-3. Analyze real-world implementations and attacks
-4. Implement basic security measures and countermeasures
-5. Evaluate system security using industry standards
-
-## Time Estimate
-
-**4 hours**
+## Estimated Time
+2–3 hours
 
 ## Prerequisites
+- Module 00 (Environment Setup)
+- Module 06 (Side-Channel Analysis Theory)
+- ChipWhisperer-Lite hardware (or simulator)
 
-- Module 06
+## Module Structure
+| File | Description |
+|------|-------------|
+| `theory.md` | Hardware architecture, scope setup, simpleserial protocol |
+| `lab-simulated.ipynb` | Interactive trace capture and visualization |
 
-## Module Content
+## Key Topics
+1. **Hardware Architecture**: CW-Lite scope, target board, FPGA, ADC
+2. **Scope Setup**: Clock, gain, trigger, decimation
+3. **Target Board**: XMEGA/STM32 firmware, simpleserial protocol
+4. **Power Trace Acquisition**: Capturing, storing, visualizing traces
+5. **Instruction Differences**: Observing different operations in power traces
 
-This module covers Scope setup, target configuration, signal capture. You will learn:
-
-- Fundamental concepts and principles
-- Real-world applications and case studies
-- Practical implementation techniques
-- Security analysis and evaluation methods
-- Best practices and industry standards
-
-## Next Steps
-
-After completing this module, continue to the next module in the curriculum sequence.
+## References
+- [ChipWhisperer Documentation](https://chipwhisperer.readthedocs.io/)
+- [ChipWhisperer-Lite Hardware](https://rtfm.newae.com/Capture/Chipwhisperer-Lite/)
+- [NewAE sca101 Labs](https://github.com/newaetech/chipwhisperer-jupyter)

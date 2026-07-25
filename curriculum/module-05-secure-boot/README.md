@@ -1,33 +1,34 @@
-# Module 05: Secure Boot & Authentication
+# Module 05: Secure Boot & Hardware Root of Trust
 
 ## Learning Objectives
+- Understand the chain of trust concept from silicon to application layer
+- Distinguish between measured boot and verified boot architectures
+- Explain UEFI Secure Boot and ARM TrustZone secure boot flows
+- Analyze real-world secure boot attack cases: bypass, downgrade, cold boot attacks
+- Design a hardware root of trust using PUF or OTP storage
 
-By the end of this module, you will be able to:
-
-1. Understand the core concepts of Measured boot
-2. Apply theoretical knowledge to practical scenarios
-3. Analyze real-world implementations and attacks
-4. Implement basic security measures and countermeasures
-5. Evaluate system security using industry standards
-
-## Time Estimate
-
-**3 hours**
+## Estimated Time
+2–3 hours
 
 ## Prerequisites
+- Module 01 (Chip Security Landscape)
+- Module 04 (PUF & TRNG)
+- Basic understanding of boot processes and firmware
 
-- Module 02
+## Module Structure
+| File | Description |
+|------|-------------|
+| `theory.md` | Chain of trust, measured boot, UEFI, ARM TrustZone, attack cases |
+| `lab-simulated.ipynb` | Interactive chain-of-trust simulation and boot verification |
 
-## Module Content
+## Key Topics
+1. **Chain of Trust**: Hardware root, immutable ROM, verified boot stages
+2. **Measured Boot vs Verified Boot**: TPM-based vs cryptographic verification
+3. **UEFI Secure Boot**: Platform key, key exchange key, signature databases
+4. **ARM TrustZone**: Secure world boot, TrustZone-aware peripherals
+5. **Attack Cases**: BootROM bypass, firmware downgrade, cold boot attacks
 
-This module covers Measured boot, secure boot chains, attack cases. You will learn:
-
-- Fundamental concepts and principles
-- Real-world applications and case studies
-- Practical implementation techniques
-- Security analysis and evaluation methods
-- Best practices and industry standards
-
-## Next Steps
-
-After completing this module, continue to the next module in the curriculum sequence.
+## References
+- [UEFI Specification](https://uefi.org/specifications)
+- [ARM TrustZone Technology](https://developer.arm.com/documentation/102467/latest/)
+- [NIST SP 800-193: Platform Firmware Resiliency](https://csrc.nist.gov/publications/detail/sp/800-193/final)
