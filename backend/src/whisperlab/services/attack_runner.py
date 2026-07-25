@@ -34,7 +34,9 @@ class AttackRunner:
 
         result = task_fn.delay(attack_id, config)
 
-        attack = (await self.db.execute(select(Attack).where(Attack.id == attack_id))).scalar_one_or_none()
+        attack = (
+            await self.db.execute(select(Attack).where(Attack.id == attack_id))
+        ).scalar_one_or_none()
         if attack is not None:
             attack.status = "running"
             await self.db.commit()
@@ -42,7 +44,9 @@ class AttackRunner:
         return result.id
 
     async def get_status(self, attack_id: str) -> dict[str, Any]:
-        attack = (await self.db.execute(select(Attack).where(Attack.id == attack_id))).scalar_one_or_none()
+        attack = (
+            await self.db.execute(select(Attack).where(Attack.id == attack_id))
+        ).scalar_one_or_none()
         if attack is None:
             raise ValueError(f"Attack not found: {attack_id}")
         return {

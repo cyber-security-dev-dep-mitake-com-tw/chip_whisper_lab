@@ -9,21 +9,21 @@ echo "  Shellcheck OK"
 ruff check backend/
 echo "  Ruff OK"
 cd app && npm run lint 2>/dev/null && echo "  ESLint OK" || echo "  ESLint skipped (frontend)"
-cd - > /dev/null
+cd - >/dev/null
 echo ""
 echo "Step 2: Type checking..."
 cd backend && mypy src/ --ignore-missing-imports && echo "  mypy OK" || echo "  mypy skipped"
-cd - > /dev/null
+cd - >/dev/null
 cd app && npx tsc --noEmit 2>/dev/null && echo "  tsc OK" || echo "  tsc skipped"
-cd - > /dev/null
+cd - >/dev/null
 echo ""
 echo "Step 3: Running backend unit tests..."
 cd backend && pytest tests/ -q --tb=short 2>/dev/null && echo "  pytest OK" || echo "  pytest skipped"
-cd - > /dev/null
+cd - >/dev/null
 echo ""
 echo "Step 4: Running Robot Framework tests..."
 cd tests/robot && robot -d /tmp/robot-results suites/ 2>/dev/null && echo "  Robot OK" || echo "  Robot skipped"
-cd - > /dev/null
+cd - >/dev/null
 echo ""
 echo "Step 5: Docker build verification..."
 docker-compose build --parallel 2>/dev/null && echo "  Docker build OK" || echo "  Docker build skipped (Docker not available)"

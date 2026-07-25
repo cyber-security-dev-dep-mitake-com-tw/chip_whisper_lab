@@ -1,22 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api-client";
 import { TraceViewer } from "@/components/trace-viewer";
+import { useTraces } from "@/lib/hooks";
 
 export default function TracesPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["traces"],
-    queryFn: api.getTraces,
-  });
+  const { data, loading } = useTraces();
 
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-6">Traces</h1>
-      {isLoading ? (
+      <h1 className="mb-6 text-2xl font-bold text-white">Traces</h1>
+      {loading ? (
         <p className="text-gray-500">Loading traces...</p>
+      ) : data.length > 0 ? (
+        <TraceViewer trace={data[0]} />
       ) : (
-        <TraceViewer traces={data?.items ?? []} />
+        <p className="text-gray-500">No traces available.</p>
       )}
     </main>
   );

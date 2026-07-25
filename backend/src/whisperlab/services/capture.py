@@ -59,9 +59,10 @@ class RealScope(ScopeInterface):
             import chipwhisperer as cw
         except ImportError as e:
             raise RuntimeError("chipwhisperer not installed") from e
-        self._scope = cw.scope()
-        self._scope.setup(gain=config.gain_db, num_samples=config.samples)
-        self._scope.adc.clkplan = config.clock_hz
+        scope = cw.scope()
+        self._scope = scope
+        scope.setup(gain=config.gain_db, num_samples=config.samples)
+        scope.adc.clkplan = config.clock_hz
 
     def capture(self) -> list[float]:
         if self._scope is None:

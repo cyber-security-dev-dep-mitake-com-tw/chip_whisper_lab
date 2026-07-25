@@ -28,10 +28,12 @@ jobs:
                    "whisperlab-${GITHUB_REF_NAME}.pkg"
       - name: Build .dmg
         run: |
-          mkdir -p dmg-root
+          mkdir -p dmg-root/curriculum
           cp "whisperlab-${GITHUB_REF_NAME}.pkg" dmg-root/
           cp scripts/install-macos.sh dmg-root/
           cp README.md dmg-root/
+          cp -R curriculum/resources dmg-root/curriculum/
+          cp curriculum/README.md dmg-root/curriculum/
           hdiutil create -volname "WhisperLab" \
                          -srcfolder dmg-root \
                          -ov -format UDZO \
@@ -52,18 +54,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - name: Build portable .exe
+      - name: Build portable whisperlab-api.exe
         run: |
           pip install pyinstaller
-          pyinstaller --onefile --name whisperlab scripts/install-macos.sh || echo "PyInstaller builds exe from Python, not bash. Placeholder for actual Windows installer."
+          pip install -e backend
+          pyinstaller --onefile --name whisperlab-api backend/src/whisperlab/main.py
+      - name: Bundle curriculum docs alongside the exe
+        shell: bash
+        run: |
+          mkdir -p dist/curriculum
+          cp -R curriculum/resources dist/curriculum/
+          cp curriculum/README.md dist/curriculum/
+          cp README.md dist/
+      - name: Zip release bundle
+        shell: bash
+        run: |
+          cd dist
+          7z a "../whisperlab-${GITHUB_REF_NAME}-windows.zip" .
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-installers
-          path: dist/
+          path: whisperlab-${{ github.ref_name }}-windows.zip
 
   build-docker:
     name: Build Docker images

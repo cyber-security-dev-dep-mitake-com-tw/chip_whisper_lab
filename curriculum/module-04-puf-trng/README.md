@@ -32,3 +32,5 @@
 - [NIST SP 800-90B: Recommendation for the Entropy Sources](https://csrc.nist.gov/publications/detail/sp/800-90b/final)
 - [PUF Survey: Physics and Applications](https://doi.org/10.1145/3365001)
 - [Gassend et al., "Silicon Physical Unclonable Functions"](https://doi.org/10.1145/774819.774845)
+
+**Further Reading (Beginner):** [Beginner Hardware Security Resources / 晶片安全入門教材與資源](../resources/hardware-security-beginner-resources.md) — free intro-level PDFs, papers, and a Chinese-language (中文) TRNG/entropy-source video course.

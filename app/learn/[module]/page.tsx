@@ -44,6 +44,35 @@ const THEORY_CONTENT: Record<string, { sections: { title: string; content: strin
       },
     ],
   },
+  "module-04-puf-trng": {
+    sections: [
+      {
+        title: "Physical Unclonable Functions (PUFs)",
+        content:
+          "A PUF maps challenges to responses using uncontrollable manufacturing variations, so every silicon die produces a unique fingerprint even from an identical mask. Weak PUFs (e.g. SRAM PUF, keyed ring-oscillator PUF) have a small challenge-response space and are used for key generation; strong PUFs (e.g. Arbiter PUF) have an exponentially large space and can support challenge-response authentication protocols.",
+      },
+      {
+        title: "PUF Types: RO, Arbiter, SRAM, Buskeeper",
+        content:
+          "Ring-oscillator PUFs compare the frequencies of identical oscillator pairs, which differ due to process variation. Arbiter PUFs race a signal through a butterfly network of switch blocks and read off which output latch wins. SRAM PUFs exploit the random power-on state of uninitialized memory cells (typically 95–99% of cells are stably biased). Buskeeper PUFs use weak-feedback flip-flops for a more uniform response distribution at the cost of custom cell design.",
+      },
+      {
+        title: "PUF Metrics & Fuzzy Extraction",
+        content:
+          "PUFs are evaluated on uniqueness (Hamming distance between chips, ideal 50%), reliability (stability of the same chip's response, ideal 100%), uniformity, and bit aliasing. Because responses are noisy, a fuzzy extractor derives a stable key: helper data generated at enrollment corrects errors in later noisy re-measurements before deriving the key.",
+      },
+      {
+        title: "True Random Number Generators (TRNGs)",
+        content:
+          "A TRNG extracts randomness from physical phenomena — thermal (Johnson-Nyquist) noise, shot noise, clock/ring-oscillator jitter, and flip-flop metastability — as opposed to a PRNG's deterministic algorithm or a DRBG's algorithm-plus-entropy-input construction (NIST SP 800-90A). A common digital architecture samples one ring oscillator's phase against another; the sampling phase is randomized by accumulated jitter.",
+      },
+      {
+        title: "The Entropy Source as a System",
+        content:
+          "Per NIST SP 800-90B, an entropy source is not just a noisy circuit — it is three cooperating parts: a noise source (the physical process, e.g. RO jitter or thermal noise), continuous health tests (repetition count test, adaptive proportion test — catching a source that silently degrades or is attacked), and optional conditioning (von Neumann debiasing, XOR, or a cryptographic hash/AES compression) that removes bias before the bits seed a DRBG. The pipeline runs: physical noise → digitizer → health tests → conditioning → min-entropy estimation (H∞ = −log₂ max pᵢ) → DRBG seed.",
+      },
+    ],
+  },
 };
 
 const DEFAULT_THEORY = {
@@ -130,6 +159,22 @@ export default function ModuleDetailPage({
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">
+            <p className="mb-2 text-[10px] font-mono uppercase tracking-wider text-[var(--green)]">
+              Further Reading
+            </p>
+            <p className="text-[12px] text-[var(--muted)] leading-relaxed">
+              Free, beginner-level PDFs and papers (English + 中文), including a dedicated
+              entropy-source / TRNG reading list.
+            </p>
+            <Link
+              href="/learn/resources"
+              className="mt-3 inline-block rounded-lg border border-[var(--line)] px-3 py-1.5 text-[11px] font-mono text-[var(--green)] transition hover:border-[#3a5245]"
+            >
+              Beginner Hardware Security Resources →
+            </Link>
           </div>
 
           {mod.lab_url && (

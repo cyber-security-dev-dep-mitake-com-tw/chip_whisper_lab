@@ -16,8 +16,10 @@ jobs:
       - name: Shellcheck and format check
         run: |
           sudo apt-get install -y shellcheck
-          shellcheck scripts/*.sh scripts/lib/*.sh
-          shfmt -d scripts/*.sh scripts/lib/*.sh
+          curl -sSLfo /tmp/shfmt https://github.com/mvdan/sh/releases/download/v3.8.0/shfmt_v3.8.0_linux_amd64
+          sudo install -m 755 /tmp/shfmt /usr/local/bin/shfmt
+          shellcheck -S error scripts/*.sh scripts/lib/*.sh
+          shfmt -d -i 0 -bn -ci scripts/*.sh scripts/lib/*.sh
 
       - name: Install Python and lint backend
         uses: actions/setup-python@v5
@@ -32,9 +34,7 @@ jobs:
         with:
           node-version: "22"
       - run: npm ci
-        working-directory: app
       - run: npm run lint
-        working-directory: app
 
       - name: Backend unit tests
         run: pip install -e "backend[dev]"
