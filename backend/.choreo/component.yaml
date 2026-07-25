@@ -1,0 +1,22 @@
+# Choreo component config for the WhisperLab API (FastAPI backend).
+# Component directory (build context) for this component in the Choreo console: backend/
+# Dockerfile path within this directory: Dockerfile
+#
+# Schema reference verified against:
+# https://wso2.com/choreo/docs/develop-components/manage-component-source-configurations/
+schemaVersion: 1.2
+
+endpoints:
+  - name: whisperlab-api
+    displayName: WhisperLab API
+    service:
+      basePath: /
+      port: 8000
+    type: REST
+    networkVisibilities:
+      - Public
+      - Organization
+    # No static openapi.yaml is checked into the repo yet -- FastAPI serves its
+    # OpenAPI schema dynamically at /api/docs and /openapi.json at runtime instead.
+    # Add `schemaFilePath: openapi.yaml` here once a static spec is exported
+    # (e.g. `python -c "import json,whisperlab.main as m; json.dump(m.app.openapi(), open('openapi.json','w'))"`).
