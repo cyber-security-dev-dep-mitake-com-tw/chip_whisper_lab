@@ -1,0 +1,35 @@
+{
+  "module_id": "module-01-chipsec-landscape",
+  "title": "Chip Security Landscape",
+  "description": "Certification frameworks, evaluation standards, and attack classification for hardware security",
+  "tags": ["certification", "fips", "common-criteria", "attack-taxonomy"],
+  "created_at": "2024-01-01",
+  "theory": {
+    "goals": ["Understand FIPS 140-3 certification", "Classify hardware attacks by invasiveness and passivity", "Analyze real-world hardware security incidents"],
+    "key_concepts": ["FIPS 140-3 Security Levels 1-4", "Common Criteria EAL Levels 1-7", "Spectre/Meltdown attacks"],
+    "difficulty": "intermediate",
+    "estimated_time_minutes": 180,
+    "prerequisites": ["module-00-setup"]
+  },
+  "api_contracts": {
+    "experiment_types": [{
+      "id": "exp-01-standard-analysis",
+      "name": "Chip Security Standards Analysis",
+      "description": "Comprehensive analysis of hardware security standards",
+      "type": "analysis",
+      "parameters": [{
+        "name": "focus_area",
+        "type": "string",
+        "required": true,
+        "values": ["fips", "common_criteria", "attack_taxonomy"]
+      }],
+      "outputs": ["standards_comparison", "attack_matrix", "incident_analysis"]
+    }],
+    "trace_processing": [{
+      "endpoint": "/api/v1/traces/experiment/{exp_id}/upload",
+      "method": "POST",
+      "description": "Upload security assessment traces",
+      "required": true
+    }]
+  }
+}

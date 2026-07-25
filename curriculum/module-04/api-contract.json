@@ -1,0 +1,81 @@
+{
+  "module_id": "module-04",
+  "title": "Physical Unclonable Functions and True Random Number Generation",
+  "description": "Advanced hardware security and side-channel analysis techniques in module 04",
+  "tags": [
+    "hardware-security",
+    "sca",
+    "advanced-analysis",
+    "protection-countermeasures"
+  ],
+  "created_at": "2024-01-01",
+  "theory": {
+    "goals": [
+      "Master advanced hardware security techniques for module 04"
+    ],
+    "key_concepts": [
+      "Advanced SCA",
+      "Hardware Protection",
+      "Countermeasure Design"
+    ],
+    "difficulty": "advanced",
+    "estimated_time_minutes": 180,
+    "prerequisites": [
+      "module-00-setup",
+      "module-01-chipsec-landscape",
+      "module-02-symmetric-hash"
+    ]
+  },
+  "api_contracts": {
+    "experiment_types": [
+      {
+        "id": "exp-04-advanced-",
+        "name": "Advanced Hardware Security Experiment Module 04",
+        "description": "Advanced side-channel attack and hardware security analysis for module 04",
+        "type": "advanced_attack",
+        "parameters": [
+          {
+            "name": "attack_type",
+            "type": "string",
+            "values": [
+              "dpa",
+              "cpa",
+              "fault_injection",
+              "em_analysis"
+            ]
+          },
+          {
+            "name": "complexity_level",
+            "type": "number",
+            "min": 1,
+            "max": 10
+          }
+        ],
+        "artifacts": [
+          "hardware_setup",
+          "traces",
+          "analysis"
+        ],
+        "performance_metrics": [
+          "success_rate",
+          "signal_to_noise_ratio",
+          "trace_quality"
+        ]
+      }
+    ],
+    "trace_processing": [
+      {
+        "endpoint": "/api/v1/traces/experiment/{exp_id}/upload",
+        "method": "POST",
+        "description": "Upload advanced traces for module 04 processing",
+        "required": true
+      },
+      {
+        "endpoint": "/api/v1/traces/experiment/{exp_id}/analyze",
+        "method": "POST",
+        "description": "Trigger advanced trace analysis for module 04",
+        "required": true
+      }
+    ]
+  }
+}

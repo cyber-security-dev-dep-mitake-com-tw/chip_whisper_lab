@@ -1,0 +1,41 @@
+{
+  "module_id": "module-00-setup",
+  "title": "Introduction to Side-Channel Analysis",
+  "description": "Fundamental concepts of SCA, hardware setup, and basic terminology for chip security analysis",
+  "tags": ["setup", "sca", "basics", "equipment"],
+  "created_at": "2024-01-01",
+  "theory": {
+    "goals": ["Understand SCA principles", "Set up basic hardware for measurements", "Learn basic terminology"],
+    "key_concepts": ["Signal Averaging", "Clock Alignment", "Power Analysis", "Trace Segmentation"],
+    "difficulty": "beginner",
+    "estimated_time_minutes": 60,
+    "prerequisites": []
+  },
+  "lab_simulated": {
+    "type": "jupyter",
+    "objectives": ["Basic Jupyter notebook setup", "Software trigger simulation", "LED toggling demonstration"],
+    "estimated_lab_time_minutes": 45,
+    "requires_hardware": false
+  },
+  "api_contracts": {
+    "experiment_types": [{
+      "id": "exp-00-setup",
+      "name": "SCA Equipment Setup Demo",
+      "description": "Basic demonstration of hardware setup and signal processing",
+      "type": "training",
+      "parameters": [{
+        "name": "equipment_type",
+        "type": "string",
+        "required": true,
+        "values": ["chipwhisperer_lite", "simulated_hardware"]
+      }],
+      "metrics": ["setup_success", "trigger_stability"]
+    }],
+    "trace_processing": [{
+      "endpoint": "/api/v1/traces/experiment/{exp_id}/upload",
+      "method": "POST",
+      "description": "Upload traces from hardware or simulation",
+      "required": true
+    }]
+  }
+}
