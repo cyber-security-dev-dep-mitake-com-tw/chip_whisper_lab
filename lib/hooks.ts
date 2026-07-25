@@ -228,6 +228,16 @@ const MOCK_MODULES: Module[] = [
     duration: "3 hours",
     lab_url: "#",
   },
+  {
+    id: "module-22-qpuf",
+    title: "Quantum PUF via IBM Quantum (Qiskit)",
+    description:
+      "QPUF design via decoherence/gate-error entropy sources, Von Neumann entropy, and the quantum-gravity entropy chain (Bekenstein-Hawking, Strominger-Vafa, Ryu-Takayanagi).",
+    category: "advanced",
+    difficulty: "advanced",
+    duration: "3-4 hours",
+    lab_url: "#",
+  },
 ];
 
 export function useExperiments() {

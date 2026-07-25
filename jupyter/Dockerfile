@@ -1,4 +1,4 @@
-FROM jupyter/scipy-notebook:python-3.12
+FROM jupyter/scipy-notebook:latest
 
 USER root
 RUN apt-get update && apt-get install -y libusb-1.0-0-dev && rm -rf /var/lib/apt/lists/*

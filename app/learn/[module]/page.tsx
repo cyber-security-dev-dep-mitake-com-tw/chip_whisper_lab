@@ -3,7 +3,102 @@
 import { use } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { useModule } from "@/lib/hooks";
+import { TheoryMarkdown } from "@/components/theory-markdown";
 import Link from "next/link";
+
+// Real Markdown+LaTeX theory content (rendered via TheoryMarkdown / KaTeX),
+// sourced from the corresponding curriculum/*/theory.md sections.
+const THEORY_MARKDOWN: Record<string, string> = {
+  "module-04-puf-trng": `
+### Why the Physics Matters: Shannon, Min-Entropy, and Boltzmann
+
+**Shannon entropy** measures the *average* uncertainty of a random variable $X$:
+
+$$
+H(X) = -\\sum_{x \\in \\mathcal{X}} P(x) \\log_2 P(x)
+$$
+
+This is the right quantity for compression, but the *wrong* one for cryptographic key
+material — an attacker only cares about their single best guess. That's why NIST SP
+800-90B certifies **min-entropy** instead, the worst-case measure:
+
+$$
+H_\\infty(X) = -\\log_2\\left(\\max_{x \\in \\mathcal{X}} P(x)\\right)
+$$
+
+Because $H_\\infty(X) \\le H(X)$ always, a source can look fairly random on average while
+still being dangerously predictable in the worst case — exactly what NIST SP 800-90B's
+health tests exist to catch.
+
+**Boltzmann entropy** explains *why* a physical noise source has unpredictability at all:
+
+$$
+S = k_B \\ln \\Omega
+$$
+
+where $\\Omega$ is the number of microscopic configurations consistent with a system's
+observed macroscopic state. Thermal (Johnson-Nyquist) noise, $V_{thermal} = \\sqrt{4 k_B T R \\Delta f}$,
+is a direct macroscopic signature of $\\Omega$: hotter resistors have more thermally-agitated
+electrons exploring more microstates, so $\\Omega$ — and the physical entropy available to a
+TRNG's digitizer — grows with temperature.
+
+| Noise Source | Physical Origin | Trade-offs |
+|---|---|---|
+| Thermal (Johnson-Nyquist) noise | Random electron motion in a resistor | Stable, well-understood; slow, temperature-sensitive |
+| Clock/RO jitter | Oscillator phase instability | Fully digital; inter-RO correlation must be checked |
+| Metastability | Flip-flop resolving an async transition | High bit rate; needs careful timing closure |
+| Ring oscillator array | Accumulated jitter across chained inverters | Most common digital TRNG primitive |
+
+*Continues in [Module 22](/learn/module-22-qpuf) with Von Neumann entropy and quantum-gravity entropy. Full derivation in this module's \`theory.md\` §3.8.*
+`.trim(),
+  "module-22-qpuf": `
+### Entropy, Quantum Information & Quantum Gravity
+
+A qubit's state is a density matrix $\\rho$, and its entropy is the **Von Neumann entropy**
+— the quantum generalization of Shannon entropy:
+
+$$
+S(\\rho) = -\\mathrm{Tr}(\\rho \\ln \\rho)
+$$
+
+A qubit in a **pure state** has $S(\\rho) = 0$ — perfectly known, in principle. Once it
+**decoheres** (T1/T2 relaxation, gate error, crosstalk — the QPUF entropy sources above), it
+becomes a **mixed state** and $S(\\rho) > 0$. Under the standard interpretation of quantum
+mechanics, the resulting measurement randomness is believed to be *fundamentally*
+non-deterministic — not just unpredictable due to incomplete information, the way classical
+thermal noise is (Module 04).
+
+**Bekenstein-Hawking entropy** asks how much information a *region of space* can hold at
+maximum. A black hole's entropy scales with the surface area $A$ of its event horizon, not
+its volume:
+
+$$
+S_{BH} = \\frac{k_B c^3 A}{4 G \\hbar}
+$$
+
+unifying thermodynamics ($k_B$), relativity ($c$, $G$), and quantum mechanics ($\\hbar$) in
+one formula — the origin of the **holographic principle**.
+
+**Strominger & Vafa (1996)** answered where the microstates $\\Omega$ in $S = k_B \\ln \\Omega$
+actually come from: using string theory, they built extremal black holes from D-branes,
+counted the microstates directly, and matched the Bekenstein-Hawking formula exactly — the
+first microscopic derivation of black hole entropy consistent with general relativity.
+
+**Ryu & Takayanagi (2006)** showed that in AdS/CFT, the entanglement entropy $S_A$ of a
+boundary region equals the area of a minimal bulk surface $\\gamma_A$ anchored to it:
+
+$$
+S_A = \\frac{\\mathrm{Area}(\\gamma_A)}{4 G_N}
+$$
+
+Quantum entanglement entropy — the same object as a QPUF's decohering-qubit entropy above —
+appears, in this framework, to be the substrate spacetime geometry itself emerges from.
+
+**References:** NIST SP 800-90B (2012) · Hawking, *Comm. Math. Phys.* 43(3), 199–220 (1975) ·
+Strominger & Vafa, *Phys. Lett. B* 379(1-4), 99–104 (1996) · Ryu & Takayanagi, *Phys. Rev.
+Lett.* 96(18), 181602 (2006).
+`.trim(),
+};
 
 const THEORY_CONTENT: Record<string, { sections: { title: string; content: string }[] }> = {
   "mod-001": {
@@ -98,6 +193,7 @@ export default function ModuleDetailPage({
 }) {
   const { module: moduleId } = use(params);
   const { data: mod } = useModule(moduleId);
+  const markdownTheory = THEORY_MARKDOWN[moduleId];
   const theory = THEORY_CONTENT[moduleId] || DEFAULT_THEORY;
 
   return (
@@ -159,6 +255,7 @@ export default function ModuleDetailPage({
                 </div>
               ))}
             </div>
+            {markdownTheory && <TheoryMarkdown content={markdownTheory} />}
           </div>
 
           <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">

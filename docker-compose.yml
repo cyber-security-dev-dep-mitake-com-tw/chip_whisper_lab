@@ -44,11 +44,11 @@ services:
       context: backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql+asyncpg://whisperlab:whisperlab@postgres:5432/whisperlab
-      REDIS_URL: redis://redis:6379/0
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: whisperlab
-      MINIO_SECRET_KEY: whisperlab123
+      WHISPERLAB_DATABASE_URL: postgresql+asyncpg://whisperlab:whisperlab@postgres:5432/whisperlab
+      WHISPERLAB_REDIS_URL: redis://redis:6379/0
+      WHISPERLAB_MINIO_ENDPOINT: minio:9000
+      WHISPERLAB_MINIO_ACCESS_KEY: whisperlab
+      WHISPERLAB_MINIO_SECRET_KEY: whisperlab123
       WHISPERLAB_SECRET_KEY: change-me-in-production
     ports:
       - "8000:8000"
@@ -69,11 +69,11 @@ services:
       dockerfile: Dockerfile
     command: celery -A whisperlab.tasks worker --loglevel=info --concurrency=2
     environment:
-      DATABASE_URL: postgresql+asyncpg://whisperlab:whisperlab@postgres:5432/whisperlab
-      REDIS_URL: redis://redis:6379/0
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: whisperlab
-      MINIO_SECRET_KEY: whisperlab123
+      WHISPERLAB_DATABASE_URL: postgresql+asyncpg://whisperlab:whisperlab@postgres:5432/whisperlab
+      WHISPERLAB_REDIS_URL: redis://redis:6379/0
+      WHISPERLAB_MINIO_ENDPOINT: minio:9000
+      WHISPERLAB_MINIO_ACCESS_KEY: whisperlab
+      WHISPERLAB_MINIO_SECRET_KEY: whisperlab123
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,18 +96,61 @@ services:
     depends_on:
       - backend
 
-  jupyter:
+  # Per-user notebook image spawned dynamically by jupyterhub's DockerSpawner
+  # below (see jupyterhub/jupyterhub_config.py). Not run directly by compose --
+  # `docker compose build jupyter-user-image` (or `up` once, which builds it)
+  # just needs to produce the `whisperlab-jupyter-user:latest` tag that
+  # DockerSpawner references.
+  jupyter-user-image:
     build:
       context: jupyter
       dockerfile: Dockerfile
+    image: whisperlab-jupyter-user:latest
+    command: ["true"]
+
+  jupyterhub:
+    build:
+      context: jupyterhub
+      dockerfile: Dockerfile
     ports:
-      - "8888:8888"
+      - "8000:8000"
     environment:
-      JUPYTER_TOKEN: whisperlab
+      DOCKERSPAWNER_IMAGE: whisperlab-jupyter-user:latest
+      DOCKERSPAWNER_NETWORK: lab-network
+      DOCKERSPAWNER_MEM_LIMIT: 1G
+      DOCKERSPAWNER_CPU_LIMIT: "1.0"
+      JUPYTERHUB_HUB_IP: jupyterhub
+      # Comma-separated usernames to auto-promote to JupyterHub admin.
+      JUPYTERHUB_ADMIN_USERS: ""
     volumes:
-      - ./.vendor/chipwhisperer/jupyter:/home/jovyan/jupyter
-      - ./data:/data
+      # DockerSpawner needs the host Docker socket to spawn per-user siblings.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jupyterhub-data:/srv/jupyterhub/data
+    networks:
+      - default
+      - lab-network
+    depends_on:
+      jupyter-user-image:
+        condition: service_completed_successfully
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      # Set via `.env` / deploy secret: token from the Cloudflare Zero Trust
+      # dashboard for a tunnel routing to jupyterhub:8000 and backend:8000.
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in .env}
+    depends_on:
+      - jupyterhub
+      - backend
+
+networks:
+  lab-network:
+    name: lab-network
 
 volumes:
   pgdata:
   miniodata:
+  jupyterhub-data:
+  # Per-user persistent home directories, one named volume per username,
+  # created automatically by DockerSpawner (jupyterhub-user-{username}).
