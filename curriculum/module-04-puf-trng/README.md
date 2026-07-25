@@ -27,6 +27,7 @@
 3. **TRNG Sources**: Ring oscillator jitter, thermal noise, shot noise, metastability
 4. **Entropy Assessment**: NIST SP 800-90B, min-entropy, collision entropy
 5. **Applications**: Key generation, device authentication, secure boot
+6. **Entropy Theory**: Shannon vs. min-entropy, Boltzmann entropy and the physical origin of thermal noise (§3.8) — continues in Module 22 with Von Neumann entropy and quantum-gravity entropy (Bekenstein-Hawking, holography)
 
 ## References
 - [NIST SP 800-90B: Recommendation for the Entropy Sources](https://csrc.nist.gov/publications/detail/sp/800-90b/final)

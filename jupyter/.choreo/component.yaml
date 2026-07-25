@@ -1,0 +1,26 @@
+# Choreo component config for the WhisperLab Jupyter lab environment
+# (ChipWhisperer + JupyterLab, used to run curriculum/*/lab-simulated.ipynb notebooks).
+# Component directory (build context) for this component in the Choreo console: jupyter/
+# Dockerfile path within this directory: Dockerfile
+#
+# Schema reference verified against:
+# https://wso2.com/choreo/docs/develop-components/manage-component-source-configurations/
+schemaVersion: 1.2
+
+endpoints:
+  - name: whisperlab-jupyter
+    displayName: WhisperLab Jupyter Lab
+    service:
+      basePath: /
+      port: 8888
+    type: REST
+    networkVisibilities:
+      - Organization
+
+configurations:
+  env:
+    - name: JUPYTER_TOKEN
+      valueFrom:
+        configForm:
+          displayName: Jupyter access token
+          type: string

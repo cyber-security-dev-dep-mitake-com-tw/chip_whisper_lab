@@ -12,6 +12,11 @@
 - ✅ `curriculum/module-04-puf-trng/README.md` — "Further Reading (Beginner)" pointer added to References
 - ✅ `curriculum/module-04-puf-trng/theory.md` — new §3.7 "Beginner Primer: The Entropy Source as a System"
 - ✅ `docs/dev_plan/IMPLEMENTATION_PLAN_V2.md` — this plan doc
+- ✅ `lib/hooks.ts` — added `module-04-puf-trng` to `MOCK_MODULES` (fixes a pre-existing id-mismatch bug where the module page silently fell back to the wrong module's content)
+- ✅ `app/learn/[module]/page.tsx` — real theory content for Module 04 (PUF types, metrics, TRNG, entropy-source-as-a-system) + a "Further Reading" card linking to the new resources page
+- ✅ `app/learn/resources/page.tsx` — new web app route rendering the curated bilingual resource list
+- ✅ `app/learn/page.tsx` — nav link to the new resources page
+- ✅ `.github/workflows/release.yml` — fixed the Windows build job (previously ran PyInstaller against a bash script and silently no-op'd); now packages the real FastAPI entrypoint (`backend/src/whisperlab/main.py`) into a working `.exe`, zipped with bundled curriculum docs; macOS `.dmg` now also bundles `curriculum/resources` and `curriculum/README.md`
 
 ## 📋 Implementation Tasks
 
@@ -35,8 +40,30 @@
 - Written as original explanatory prose, not copied notes; does not duplicate existing §3.2–3.6 content, builds on it.
 - ✅ Done
 
+### Phase 4: Web App Wiring
+#### T4.1 Fix Module 04 id mismatch and render real content
+- `lib/hooks.ts`: `MOCK_MODULES` was missing a `module-04-puf-trng` entry, so `useModule("module-04-puf-trng")` silently fell back to `MOCK_MODULES[0]` (a different module's title/description). Added the correct entry.
+- `app/learn/[module]/page.tsx`: added a real `THEORY_CONTENT["module-04-puf-trng"]` entry (PUF types/metrics, TRNG, entropy-source-as-a-system) instead of the generic placeholder, plus a "Further Reading" card linking to `/learn/resources`.
+- ✅ Done — verified by production build + HTTP smoke test (see Quality Gates)
+
+#### T4.2 New Resources route
+- `app/learn/resources/page.tsx`: new route rendering the curated bilingual resource list as real UI (not markdown passthrough), matching the existing `Sidebar`/`lab-shell` page pattern.
+- `app/learn/page.tsx`: added a "📚 Beginner Resources (EN/中文)" nav link.
+- ✅ Done
+
+### Phase 5: Native Installer Fixes
+#### T5.1 Fix the broken Windows release job
+- `.github/workflows/release.yml` `build-windows` previously ran `pyinstaller` against `scripts/install-macos.sh` (a bash script) with a silent `|| echo "...Placeholder..."` fallback — it never produced a working artifact.
+- Replaced with: `pip install -e backend`, then `pyinstaller --onefile --name whisperlab-api backend/src/whisperlab/main.py` (the real FastAPI entrypoint), bundled with `curriculum/resources`, `curriculum/README.md`, and root `README.md`, zipped as `whisperlab-<tag>-windows.zip`.
+- Verified locally (macOS, Python 3.12 matching CI's pinned version): `pip install -e backend` succeeds, PyInstaller produces a valid executable, and it correctly imports `fastapi`/`uvicorn`/`whisperlab` (confirmed by intentionally testing with a mismatched Python 3.14 venv first, which reproduced an import failure, then with matching 3.12 the build and imports succeeded).
+- ✅ Done
+
+#### T5.2 Bundle curriculum docs into macOS installer
+- `.github/workflows/release.yml` `build-macos` `.dmg` step now also copies `curriculum/resources/` and `curriculum/README.md` into the disk image, so the new beginner resource list is available offline after install.
+- ✅ Done
+
 ## 📦 Dependencies
-- None (documentation-only change, no new packages or build steps).
+- No new runtime dependencies. CI-only: Windows job now uses `pip install -e backend` + `pyinstaller` (already used elsewhere in the project's `scripts/package-build.sh`).
 
 ## 🚀 Implementation Roadmap
 | Phase | Tasks | Duration | Deliverables |
@@ -44,12 +71,21 @@
 | 1 | Curated resource doc | ~1 hr | `curriculum/resources/hardware-security-beginner-resources.md` |
 | 2 | Curriculum index wiring | ~15 min | Updated `curriculum/README.md`, Module 04 `README.md` |
 | 3 | Entropy source theory content | ~45 min | New §3.7 in Module 04 `theory.md` |
+| 4 | Web app wiring | ~1 hr | Fixed Module 04 page, new `/learn/resources` route, nav link |
+| 5 | Native installer fixes | ~45 min | Working Windows `.exe` build, curriculum docs bundled into macOS/Windows artifacts |
 
 ## 🔍 Quality Gates
 - All links match user-supplied URLs exactly — no invented URLs.
-- New Markdown renders correctly (tables, headers, relative links resolve).
-- Module 04's existing content (§1–§6, references) left unmodified aside from the additive "Further Reading" line.
+- New Markdown renders correctly (tables, headers, relative links resolve) — verified via cross-link resolution script and GitHub heading-slug check.
+- Module 04's existing content (§1–§6, references) left unmodified aside from the additive "Further Reading" line and new §3.7.
 - No PDFs or binaries committed to the repository.
+- `npx tsc --noEmit` — no new type errors introduced (pre-existing unrelated errors in `app/lib/*`, `worker/`, `db/` untouched).
+- `eslint` on all touched files — no new errors (one pre-existing unused-import warning in `lib/hooks.ts`, not introduced by this change).
+- `npm run build` (vinext/Next.js production build) succeeds; `/learn`, `/learn/module-04-puf-trng`, `/learn/resources` all present in the route manifest.
+- `node --test tests/rendered-html.test.mjs` passes.
+- Production server smoke test: all three routes return HTTP 200 and contain the expected real content (verified via `curl` + `grep` for known strings, not just status codes).
+- Windows PyInstaller build path verified locally end-to-end (correct Python version, dependency install, successful binary build, correct imports) since CI's `windows-latest` runner isn't available in this environment.
 
 ## 🛠️ Development Workflow
-- Content-only change on the `dev` branch; no build/test suite applies (Markdown curriculum content).
+- `curriculum/` and `docs/` changes are content-only.
+- `app/`, `lib/hooks.ts`, and `.github/workflows/release.yml` changes were verified with the project's existing toolchain (`tsc`, `eslint`, `npm run build`, `node --test`) rather than assumed correct.

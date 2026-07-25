@@ -780,3 +780,52 @@ input[type="range"] {
     transition: none !important;
   }
 }
+
+.theory-markdown {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.theory-markdown h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.theory-markdown p {
+  margin: 0.75rem 0;
+}
+
+.theory-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 11px;
+}
+
+.theory-markdown th,
+.theory-markdown td {
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.theory-markdown code {
+  background: #1c2922;
+  border: 1px solid #2a3a30;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 11px;
+}
+
+/* KaTeX display math can overflow narrow panels; scroll instead of clipping. */
+.theory-markdown .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+}
