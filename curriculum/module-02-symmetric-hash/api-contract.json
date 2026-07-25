@@ -1,0 +1,35 @@
+{
+  "module_id": "module-02-symmetric-hash",
+  "title": "Symmetric Cryptographic Functions and AES",
+  "description": "In-depth analysis of AES rounds, S-box leakage, and side-channel attack vectors against symmetric encryption",
+  "tags": ["symmetric", "aes", "s-box", "sca", "leakage"],
+  "created_at": "2024-01-01",
+  "theory": {
+    "goals": ["Understand AES internal structure", "Analyze S-box leakage patterns", "Model side-channel traces for symmetric ciphers"],
+    "key_concepts": ["AES SubBytes operation", "AES S-box differential power analysis", "Linear and Differential Cryptanalysis"],
+    "difficulty": "intermediate",
+    "estimated_time_minutes": 240,
+    "prerequisites": ["module-00-setup", "module-01-chipsec-landscape"]
+  },
+  "api_contracts": {
+    "experiment_types": [{
+      "id": "exp-02-aes-snapshot",
+      "name": "AES Power Analysis Demo",
+      "description": "Capture power traces during AES encryption/ Decryption",
+      "type": "power_analysis",
+      "parameters": [{
+        "name": "operation",
+        "type": "string",
+        "required": true,
+        "values": ["encryption", "decryption", "single_round"]
+      }],
+      "trace_metrics": ["cpu_activity", "memory_access_pattern", "power_consumption"]
+    }],
+    "trace_processing": [{
+      "endpoint": "/api/v1/traces/experiment/{exp_id}/upload",
+      "method": "POST",
+      "description": "Upload AES power analysis traces",
+      "required": true
+    }]
+  }
+}

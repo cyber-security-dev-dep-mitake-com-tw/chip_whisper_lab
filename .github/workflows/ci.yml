@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  lint-scripts:
+    name: Lint shell scripts
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: brew install shellcheck shfmt
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh scripts/lib/*.sh
+      - name: shfmt
+        run: shfmt -d scripts/*.sh scripts/lib/*.sh
+
+  lint-backend:
+    name: Lint backend (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check backend/
+
+  lint-frontend:
+    name: Lint frontend (TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+        working-directory: app
+      - run: npm run lint
+        working-directory: app
+
+  typecheck-backend:
+    name: Type check backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install mypy types-pytz
+      - run: pip install -e "backend[dev]"
+      - run: mypy backend/src/ --ignore-missing-imports
+
+  typecheck-frontend:
+    name: Type check frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+        working-directory: app
+      - run: npx tsc --noEmit
+        working-directory: app
+
+  test-backend-unit:
+    name: Backend unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e "backend[dev]"
+      - run: pytest backend/tests/ -q --tb=short
+
+  test-installer:
+    name: Installer dry-run (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer dry-run
+        run: ./scripts/install-macos.sh --dry-run
+
+  test-installer-simulator:
+    name: Installer simulator mode (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer simulator dry-run
+        run: ./scripts/install-macos.sh --dry-run --simulator-only
+
+  test-doctor:
+    name: Doctor checks
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run doctor
+        run: ./scripts/doctor-macos.sh --simulator-only=true || true

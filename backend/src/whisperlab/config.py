@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,23 +13,22 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "WhisperLab"
-    host: str = "127.0.0.1"
-    port: int = 8123
-    token: str = Field(default="", repr=False)
-    simulation: bool = True
-    enable_execution: bool = False
-    execution_timeout_seconds: int = Field(default=30, ge=1, le=3600)
-    workspace_root: Path = Field(default_factory=lambda: Path.cwd() / "work")
-    data_root: Path = Field(default_factory=lambda: Path.cwd() / "data")
     database_url: str = Field(
         default="postgresql+asyncpg://whisperlab:whisperlab@127.0.0.1:5432/whisperlab",
         repr=False,
     )
+    redis_url: str = Field(default="redis://127.0.0.1:6379/0", repr=False)
 
-    @property
-    def is_loopback(self) -> bool:
-        return self.host in {"127.0.0.1", "::1", "localhost"}
+    minio_endpoint: str = "127.0.0.1:9000"
+    minio_access_key: str = Field(default="whisperlab", repr=False)
+    minio_secret_key: str = Field(default="whisperlab", repr=False)
+    minio_bucket: str = "whisperlab"
+    minio_use_ssl: bool = False
+
+    secret_key: str = Field(default="change-me-in-production", repr=False)
+    cors_origins: list[str] = Field(
+        default=["http://127.0.0.1:3000", "http://localhost:3000"],
+    )
 
 
 @lru_cache

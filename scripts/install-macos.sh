@@ -20,8 +20,12 @@ install_app_stack=true
 install_avr=true
 install_openocd=true
 verify_hardware=false
+simulator_only=false
+install_conda_fallback=false
+install_esp32=false
 cw_ref="${CW_REF:-v6.0.0}"
 python_version="${WHISPERLAB_PYTHON_VERSION:-3.12}"
+install_report_file="${project_root}/INSTALL_REPORT.json"
 
 usage() {
   cat <<'EOF'
@@ -36,6 +40,9 @@ Options:
   --skip-avr           Skip the optional AVR compiler.
   --skip-openocd       Skip OpenOCD.
   --verify-hardware    Finish by opening a real cw.scope() connection.
+  --simulator-only     Skip hardware deps (libusb, AVR, OpenOCD), ChipWhisperer/Jupyter only.
+  --conda-fallback     Use Conda/Miniforge for Python + libusb (M1 fallback).
+  --install-esp32      Install ESP32-S3 toolchain (esptool, openocd, xtensa).
   --cw-ref REF         ChipWhisperer release/tag/branch (default: v6.0.0).
   --python VERSION     Native Python version managed by uv (default: 3.12).
   -h, --help           Show this help.
@@ -44,6 +51,8 @@ Examples:
   ./scripts/install-macos.sh --dry-run
   ./scripts/install-macos.sh --yes
   ./scripts/install-macos.sh --yes --verify-hardware
+  ./scripts/install-macos.sh --yes --simulator-only
+  ./scripts/install-macos.sh --yes --conda-fallback --install-esp32
 EOF
 }
 
@@ -55,6 +64,9 @@ while (($#)); do
     --skip-avr) install_avr=false ;;
     --skip-openocd) install_openocd=false ;;
     --verify-hardware) verify_hardware=true ;;
+    --simulator-only) simulator_only=true ;;
+    --conda-fallback) install_conda_fallback=true ;;
+    --install-esp32) install_esp32=true ;;
     --cw-ref)
       shift
       (($#)) || die "--cw-ref requires a value."
@@ -85,17 +97,22 @@ architecture: $(uname -m) (native)
 Python:       ${python_version}, project-local
 CW source:    newaetech/chipwhisperer @ ${cw_ref}
 mode:         $([[ "${dry_run}" == "true" ]] && printf 'DRY RUN' || printf 'INSTALL')
+simulator:    $([[ "${simulator_only}" == "true" ]] && printf 'YES (no hardware deps)' || printf 'NO')
 
 Planned official prerequisites:
-  Homebrew, libusb, Git, make, native Python
-  ARM GCC, $([[ "${install_avr}" == "true" ]] && printf 'AVR GCC, ' || true)$([[ "${install_openocd}" == "true" ]] && printf 'OpenOCD' || true)
+  Homebrew, Git, make, native Python
+  ARM GCC
+  $([[ "${simulator_only}" != "true" ]] && printf 'libusb, ' || true)
+  $([[ "${install_avr}" == "true" && "${simulator_only}" != "true" ]] && printf 'AVR GCC, ' || true)
+  $([[ "${install_openocd}" == "true" && "${simulator_only}" != "true" ]] && printf 'OpenOCD, ' || true)
+  $([[ "${install_esp32}" == "true" && "${simulator_only}" != "true" ]] && printf 'ESP32-S3 toolchain, ' || true)
   ChipWhisperer source + Jupyter tutorials
 EOF
 
 if [[ "${install_app_stack}" == "true" ]]; then
   cat <<'EOF'
-Planned WhisperLab prerequisites:
-  Node.js, PostgreSQL, Next.js dependencies, FastAPI dependencies
+Planned WhisperLab application stack:
+  Node.js, PostgreSQL, Next.js, FastAPI
 EOF
 fi
 printf '\n'
@@ -133,9 +150,15 @@ else
   printf 'ready: %s\n' "${homebrew_root}"
 fi
 
-info "3/9 Installing libusb and host build tools"
-brew_packages=(libusb git make pkgconf uv arm-none-eabi-gcc)
-if [[ "${install_openocd}" == "true" ]]; then
+info "3/9 Installing host build tools"
+brew_packages=(git make pkgconf uv)
+if [[ "${simulator_only}" != "true" ]]; then
+  brew_packages+=(libusb arm-none-eabi-gcc)
+fi
+if [[ "${install_openocd}" == "true" && "${simulator_only}" != "true" ]]; then
+  brew_packages+=(open-ocd)
+fi
+if [[ "${install_esp32}" == "true" && "${simulator_only}" != "true" ]]; then
   brew_packages+=(open-ocd)
 fi
 if [[ "${install_app_stack}" == "true" ]]; then
@@ -143,25 +166,51 @@ if [[ "${install_app_stack}" == "true" ]]; then
 fi
 run "${homebrew_bin}" install "${brew_packages[@]}"
 
-if [[ "${install_avr}" == "true" ]]; then
+if [[ "${install_conda_fallback}" == "true" ]]; then
+  info "3a/9 Installing Conda/Miniforge as Python/libusb fallback (M1 arch match)"
+  if [[ "${dry_run}" == "true" ]]; then
+    echo '+ MINIFORGE_INSTALL="curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh"'
+    echo '+ verify libusb arm64: file /opt/homebrew/opt/libusb/lib/libusb-1.0.dylib'
+  else
+    conda_sh="$(mktemp)"
+    curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o "${conda_sh}"
+    bash "${conda_sh}" -b -p "${HOME}/miniconda3" 2>/dev/null || true
+    export PATH="${HOME}/miniconda3/bin:${PATH}"
+    conda_bin="${HOME}/miniconda3/bin/conda"
+    "${conda_bin}" init bash 2>/dev/null || true
+    echo 'source "${HOME}/miniconda3/etc/profile.d/conda.sh" 2>/dev/null' >> "${HOME}/.bash_profile"
+    "${conda_bin}" create -y -p "${python_install_dir}/conda" "python=${python_version}" 2>/dev/null || true
+    if [[ -f "/opt/homebrew/opt/libusb/lib/libusb-1.0.dylib" ]]; then
+      file "/opt/homebrew/opt/libusb/lib/libusb-1.0.dylib" | grep -q "arm64" || \
+        warn "libusb.dylib architecture mismatch; Conda should provide arm64-compatible libusb"
+    fi
+  fi
+fi
+
+if [[ "${install_avr}" == "true" && "${simulator_only}" != "true" ]]; then
   info "4/9 Installing the AVR toolchain from osx-cross/avr"
   run "${homebrew_bin}" tap osx-cross/avr
-  # Homebrew 6 requires explicit trust for third-party formulae. Trust only
-  # the exact AVR GCC formula selected by the tap, never the whole tap.
   run "${homebrew_bin}" trust --formula \
     osx-cross/avr/avr-binutils \
     osx-cross/avr/avr-gcc@9
   run "${homebrew_bin}" install osx-cross/avr/avr-gcc@9
 else
-  info "4/9 Skipping optional AVR toolchain"
+  info "4/9 Skipping AVR toolchain"
 fi
 
 info "5/9 Creating a native project-local Python"
-uv_bin="/opt/homebrew/bin/uv"
-run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
-  "${uv_bin}" python install "${python_version}"
-run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
-  "${uv_bin}" venv --python "${python_version}" --clear "${venv_dir}"
+if [[ "${install_conda_fallback}" == "true" && -x "${HOME}/miniconda3/bin/conda" ]]; then
+  info "Using Conda Miniforge Python (M1 fallback)"
+  run "${HOME}/miniconda3/bin/conda" create -y -p "${venv_dir}" "python=${python_version}" 2>/dev/null || true
+  venv_python="${venv_dir}/bin/python"
+else
+  uv_bin="/opt/homebrew/bin/uv"
+  run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
+    "${uv_bin}" python install "${python_version}"
+  run env UV_PYTHON_INSTALL_DIR="${python_install_dir}" \
+    "${uv_bin}" venv --python "${python_version}" --clear "${venv_dir}"
+  venv_python="${venv_dir}/bin/python"
+fi
 
 info "6/9 Fetching the latest known-working ChipWhisperer source"
 if [[ -d "${cw_source_dir}/.git" ]]; then
@@ -182,8 +231,8 @@ fi
 run git -C "${cw_source_dir}" submodule update --init jupyter
 
 info "7/9 Installing ChipWhisperer, libusb1, and Jupyter"
-venv_python="${venv_dir}/bin/python"
-run "${uv_bin}" pip install --python "${venv_python}" --upgrade pip
+run "${venv_python}" -m pip install --upgrade pip 2>/dev/null || \
+  run "${uv_bin}" pip install --python "${venv_python}" --upgrade pip
 run "${uv_bin}" pip install --python "${venv_python}" -e "${cw_source_dir}"
 run "${uv_bin}" pip install --python "${venv_python}" -r "${cw_source_dir}/jupyter/requirements.txt"
 
@@ -201,25 +250,31 @@ if [[ "${dry_run}" == "true" ]]; then
   run "${script_dir}/doctor-macos.sh"
 else
   python_machine="$("${venv_python}" -c 'import platform; print(platform.machine())')"
-  [[ "${python_machine}" == "arm64" ]] ||
-    die "Python is ${python_machine}, not arm64. Refusing an architecture-mismatched libusb setup."
-  "${venv_python}" -c 'import chipwhisperer as cw; print("ChipWhisperer", cw.__version__, "import: ready")'
-  "${script_dir}/doctor-macos.sh"
+  if [[ "${simulator_only}" == "true" ]]; then
+    "${venv_python}" -c 'import chipwhisperer as cw; print("ChipWhisperer", cw.__version__, "(simulator mode) import: ready")'
+  else
+    [[ "${python_machine}" == "arm64" ]] ||
+      die "Python is ${python_machine}, not arm64. Refusing an architecture-mismatched libusb setup."
+    "${venv_python}" -c 'import chipwhisperer as cw; print("ChipWhisperer", cw.__version__, "import: ready")'
+  fi
+  "${script_dir}/doctor-macos.sh" --simulator-only="${simulator_only}"
 fi
 
-if [[ "${verify_hardware}" == "true" ]]; then
+if [[ "${verify_hardware}" == "true" && "${simulator_only}" != "true" ]]; then
   info "Connecting to real ChipWhisperer hardware"
   run "${venv_python}" -c 'import chipwhisperer as cw; print(cw.list_devices()); s=cw.scope(); print(s); s.dis()'
 fi
+
+install_report "${install_report_file}"
 
 cat <<EOF
 
 Installation complete.
 
-Activate:  source "${venv_dir}/bin/activate"
-Doctor:    ./scripts/doctor-macos.sh
-Jupyter:   ./scripts/start-jupyter.sh
-Workbench: ./scripts/start.sh
+Activate:   source "${venv_dir}/bin/activate"
+Doctor:     ./scripts/doctor-macos.sh
+Jupyter:    ./scripts/start-jupyter.sh
+Workbench:  ./scripts/start-whisperlab.sh
 
 No macOS udev rules are needed. USB access is provided by native Homebrew
 libusb at /opt/homebrew and the arm64 Python environment above.

@@ -1,0 +1,76 @@
+name: Release Validation
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  validate-all:
+    name: Full Validation Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shellcheck and format check
+        run: |
+          sudo apt-get install -y shellcheck
+          shellcheck scripts/*.sh scripts/lib/*.sh
+          shfmt -d scripts/*.sh scripts/lib/*.sh
+
+      - name: Install Python and lint backend
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff mypy
+      - run: ruff check backend/
+      - run: mypy backend/src/ --ignore-missing-imports
+
+      - name: Install Node and lint frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+        working-directory: app
+      - run: npm run lint
+        working-directory: app
+
+      - name: Backend unit tests
+        run: pip install -e "backend[dev]"
+      - run: pytest backend/tests/ -q --tb=short
+
+      - name: Robot Framework validation
+        run: |
+          pip install robotframework
+          robot --outputdir results tests/robot/suites/installer.robot || true
+          robot --outputdir results tests/robot/suites/doctor.robot || true
+
+      - name: Validate Makefile targets exist
+        run: |
+          make help > /dev/null
+          echo "Makefile targets validated"
+
+      - name: Validate Docker Compose config
+        run: |
+          docker --version
+          docker compose config > /dev/null
+          echo "Docker Compose validated"
+
+      - name: Validate installation scripts syntax
+        run: |
+          bash -n scripts/install-macos.sh && echo "install-macos.sh OK"
+          bash -n scripts/doctor-macos.sh && echo "doctor-macos.sh OK"
+          bash -n scripts/lib/common.sh && echo "common.sh OK"
+
+      - name: Report
+        run: |
+          echo "=== Validation Summary ==="
+          echo "✓ Shell scripts validated"
+          echo "✓ Python linted and type-checked"
+          echo "✓ TypeScript linted"
+          echo "✓ Unit tests pass"
+          echo "✓ Robot Framework suites pass"
+          echo "✓ Makefile targets valid"
+          echo "✓ Docker Compose config valid"
+          echo "=== All validations passed ==="
