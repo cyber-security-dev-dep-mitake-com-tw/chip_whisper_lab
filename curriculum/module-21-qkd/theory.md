@@ -1,59 +1,43 @@
-# Module 21: Theory - QKD Device Security
+# QKD Device Security (SPAD Blinding, Timing SC)
 
-## Core Concepts
+## Quantum Key Distribution (QKD) Overview
 
-### Quantum Key Distribution principles
+QKD uses quantum mechanics (Heisenberg uncertainty, no-cloning theorem) to establish a shared secret key between two parties (Alice and Bob). The protocol guarantees that any eavesdropping attempt (Eve) introduces detectable errors.
 
-Understanding the fundamental principles of Quantum Key Distribution principles is essential for:
-- Analyzing system security properties
-- Identifying potential vulnerabilities
-- Implementing effective countermeasures
-- Evaluating security certifications
+Popular QKD protocols:
+- **BB84** (Bennett & Brassard, 1984): 4 quantum states (2 bases, 2 states each)
+- **E91** (Ekert, 1991): Entanglement-based, Bell inequality verification
+- **Continuous-Variable (CV)** QKD: Uses coherent states, homodyne detection
 
-### SPAD blinding and timing attacks
+## QKD Hardware Attack Surface
 
-SPAD blinding and timing attacks provides the foundation for:
-- Security analysis methodologies
-- Attack implementation techniques
-- Defense mechanism development
-- Performance optimization
+The theoretical security of QKD assumes perfect devices. Real devices have imperfections that can be exploited.
 
-## Technical Details
+### SPAD (Single Photon Avalanche Diode) Blinding Attack
 
-### Key Principles
+**Principle**: SPADs are designed to detect single photons (avalanche breakdown triggered by single photon). An attacker can "blind" the SPAD by sending bright light, forcing it into linear mode (classical photodiode behavior) instead of Geiger mode.
 
-1. **Security Fundamentals**: Core security properties and requirements
-2. **Implementation Considerations**: Practical aspects of secure design
-3. **Attack Vectors**: Common vulnerabilities and exploitation methods
-4. **Countermeasures**: Defensive techniques and best practices
+**Attack Steps (Makarov 2009)**:
+1. Eve sends bright light pulse → SPAD becomes linear (non-Geiger)
+2. Eve sends bright pulse with her own state → SPAD detects her state (not Alice's)
+3. Eve monitors SPAD output (linear mode: current proportional to light intensity)
+4. Bob's detection timing reveals Eve's basis choice
+5. Alice and Bob establish a key where Eve has full knowledge
 
-### Mathematical Foundations
+**Countermeasure**: Monitor SPAD current continuously and compare expected vs. observed current; implement detector gating with precise timing windows.
 
-The mathematical basis for this module includes:
-- Statistical analysis methods
-- Information theory concepts
-- Computational complexity principles
-- Cryptographic foundations
+### Timing Side-Channels in QKD
+- **Basis choice timing**: QKD source uses random basis selection; if basis selection timing reveals the choice (e.g., due to timing jitter in detector electronics), Eve can determine which measurements to trust
+- **Detector efficiency mismatch**: Alice and Bob's detectors have different efficiency vs. wavelength/time characteristics; Eve can exploit this by sending light at the most efficiently detected wavelength/basis
 
-## Practical Applications
+### Photonic IC Security
+Photonic integrated circuits (PICs) for QKD miniaturization introduce physical security concerns:
+- On-chip waveguide routing enables side-channel access
+- Optical port access enables injection of light without detection
+- Anti-counterfeiting markings needed for chip authenticity verification
 
-### Real-World Examples
-
-- Industry implementations and case studies
-- Academic research and publications
-- Standardization efforts and compliance requirements
-- Emerging trends and future directions
-
-### Performance Considerations
-
-- Implementation efficiency
-- Resource constraints
-- Trade-offs between security and performance
-- Scalability and deployment considerations
-
-## References
-
-1. Academic papers and publications
-2. Industry standards and specifications
-3. Open-source implementations and tools
-4. Training materials and documentation
+## Reference Papers
+- Makarov, V. (2009). "Blinding attack on quantum cryptography." Physical Review A 80.
+- Lydersen, L., et al. (2010). "Hacking commercial quantum cryptography systems by tailored bright illumination." Nature Photonics 4.
+- Quantum Hacking: https://quantumhack.wordpress.com/
+- Makarov's quantum hacking lecture slides
