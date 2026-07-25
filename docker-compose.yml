@@ -85,8 +85,10 @@ services:
 
   frontend:
     build:
-      context: app
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: app/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
     ports:
       - "3000:3000"
     environment:
@@ -96,8 +98,8 @@ services:
 
   jupyter:
     build:
-      context: .
-      dockerfile: Dockerfile.jupyter
+      context: jupyter
+      dockerfile: Dockerfile
     ports:
       - "8888:8888"
     environment:

@@ -62,8 +62,48 @@ Attackers might try to train a model to predict QPUF outputs:
 2. **Challenge-response pairs**: QPUF challenge → quantum circuit → qubit readout as response
 3. **Unpredictable noise**: Quantum noise (T1/T2 fluctuations) changes over time, making modeling attacks difficult
 
+## Entropy, Quantum Information & Quantum Gravity
+
+The QPUF entropy sources listed above (decoherence, gate error, crosstalk, readout noise) all reduce to one question: what makes quantum measurement outcomes fundamentally unpredictable, and how far does that unpredictability go as a physical concept? This section traces the entropy formalism from the qubit up through the deepest open questions in theoretical physics — not as a tangent, but because it directly explains *why* quantum measurement is a categorically different entropy source from the classical thermal/jitter noise in Module 04 §3.8.
+
+### Von Neumann Entropy: Entropy of a Quantum State
+
+Classical (Shannon/min-)entropy, covered in Module 04 §3.8, describes uncertainty over a *classical* probability distribution. A qubit's state is instead described by a density matrix $\rho$, and its entropy is the **Von Neumann entropy**, the quantum generalization of Shannon entropy:
+
+$$
+S(\rho) = -\mathrm{Tr}(\rho \ln \rho)
+$$
+
+For a qubit in a **pure state** (no entanglement with the environment — e.g. immediately after a controlled gate sequence), $S(\rho) = 0$: the state is, in principle, perfectly known. Once the qubit **decoheres** — entangles with its environment through T1/T2 relaxation, gate error, or crosstalk (exactly the QPUF entropy sources above) — it becomes a **mixed state** and $S(\rho) > 0$. This is the formal statement of what "measurement-based QPUF" and "entanglement-based QPUF" (above) are actually harvesting: device-specific decoherence converts a pure state into a mixed one, and the entropy of that mixing is unique to each chip's physical imperfections. Crucially, the randomness in the resulting measurement outcome (e.g. from a Hadamard + measure circuit) is believed to be **fundamentally** non-deterministic under the standard (Copenhagen) interpretation of quantum mechanics — not merely unpredictable due to an attacker's incomplete information, the way classical thermal noise is (Module 04 §3.8). This is why QPUF and QRNG designs treat quantum measurement as the strongest available entropy source.
+
+### Bekenstein-Hawking Entropy: Entropy Has a Physical Limit
+
+If entropy measures "how much unknown information a system can hold," general relativity asks a sharp version of that question: how much information can a *region of space* hold, at maximum? Bekenstein and Hawking answered this for black holes — a black hole has entropy, and it scales not with its volume (as ordinary matter's entropy does) but with the surface area $A$ of its event horizon:
+
+$$
+S_{BH} = \frac{k_B c^3 A}{4 G \hbar}
+$$
+
+This single formula unifies thermodynamics ($k_B$), relativity ($c$, $G$), and quantum mechanics ($\hbar$) — and its area (not volume) scaling implies that the maximum information density of any region of space is bounded by its boundary, not its interior. This is the origin of the **holographic principle**, below.
+
+### Strominger-Vafa: Where Does $\Omega$ Come From?
+
+Bekenstein-Hawking gives the macroscopic entropy of a black hole, but Boltzmann's $S = k_B \ln \Omega$ (Module 04 §3.8) demands a microscopic answer: what *are* the $\Omega$ microstates being counted? General relativity alone can't say — it has no microscopic degrees of freedom to count. In 1996, Strominger and Vafa used string theory to construct a class of extremal black holes out of D-branes, directly counted the quantum microstates of that D-brane configuration, and showed that $k_B \ln \Omega$ computed from the microstate count matches the Bekenstein-Hawking area formula exactly. This was the first time any theory produced a microscopic derivation of black hole entropy consistent with general relativity — strong evidence that string theory correctly describes quantum gravity at the level of counting degrees of freedom.
+
+### Ryu-Takayanagi & the Holographic Principle: Entropy as Geometry
+
+The area-scaling of black hole entropy generalizes into the **holographic principle**: the information content of a volume of space is fully described by a theory living on its lower-dimensional boundary. The clearest realization is the **AdS/CFT correspondence**, where a gravitational theory in the "bulk" of Anti-de Sitter space is exactly dual to a conformal field theory (with no gravity) on its boundary. Ryu and Takayanagi (2006) showed that the **entanglement entropy** $S_A$ of a boundary region $A$ — how quantum-correlated that region is with the rest of the boundary theory — equals the area of a minimal surface $\gamma_A$ in the bulk that anchors to $A$'s edge:
+
+$$
+S_A = \frac{\mathrm{Area}(\gamma_A)}{4 G_N}
+$$
+
+The implication for this module: quantum entanglement entropy — the same conceptual object as the Von Neumann entropy of a QPUF's decohering qubits above — appears, in this framework, to be the substrate from which spacetime geometry itself emerges. This is the frontier where "entropy source for a random bit generator" and "entropy as the fabric of spacetime" turn out to be the same underlying formalism applied at wildly different scales.
+
 ## References
-- NIST PUF standardization efforts
-- IBM Quantum Experience (qiskit.org)
-- Quantum random number generation literature
-- Recent QPUF research papers (ISCA, MICRO, DAC)
+- NIST SP 800-90B: *Recommendation for the Entropy Sources Used for Random Bit Generation.* NIST, August 2012.
+- Hawking, S. W. (1975). "Particle creation by black holes." *Communications in Mathematical Physics*, 43(3), 199–220.
+- Strominger, A., & Vafa, C. (1996). "Microscopic origin of the Bekenstein-Hawking entropy." *Physics Letters B*, 379(1–4), 99–104.
+- Ryu, S., & Takayanagi, T. (2006). "Holographic derivation of entanglement entropy from AdS/CFT." *Physical Review Letters*, 96(18), 181602.
+- IBM Quantum Experience (quantum.ibm.com / qiskit.org)
+- NIST PUF standardization efforts; recent QPUF research (ISCA, MICRO, DAC)

@@ -10,4 +10,6 @@ RUN mkdir -p /home/jovyan/jupyter
 WORKDIR /home/jovyan/jupyter
 EXPOSE 8888
 
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=''"]
+ENV JUPYTER_TOKEN=""
+
+CMD jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token="${JUPYTER_TOKEN}"

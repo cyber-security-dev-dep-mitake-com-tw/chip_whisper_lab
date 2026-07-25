@@ -316,6 +316,36 @@ The min-entropy estimate from the last-but-one step is what determines how many 
 
 *Further reading, free downloadable references (CyBOK, NIST SP 800-90B, RISC-V Entropy Source Interface), and a Chinese-language (中文) video course on this exact pipeline are collected in [`curriculum/resources/hardware-security-beginner-resources.md`](../resources/hardware-security-beginner-resources.md).*
 
+### 3.8 Why the Physics Matters: Shannon, Min-Entropy, and Boltzmann
+
+§3.4 already gives the min-entropy formula NIST SP 800-90B certifies against. It's worth stepping back to see where that formula comes from and why the "physical" in "physical noise source" is doing real work, not just marketing.
+
+**Shannon entropy** measures the *average* uncertainty of a random variable $X$ over its outcome space $\mathcal{X}$:
+
+$$
+H(X) = -\sum_{x \in \mathcal{X}} P(x) \log_2 P(x)
+$$
+
+This is the right quantity for compression and average-case reasoning, but it is the *wrong* quantity for cryptographic key material: an attacker doesn't care about your source's average behavior, only about their best single guess. That's why NIST SP 800-90B certifies **min-entropy** instead — the worst-case (most conservative) measure, driven entirely by the single most likely outcome:
+
+$$
+H_\infty(X) = -\log_2\left(\max_{x \in \mathcal{X}} P(x)\right)
+$$
+
+(This is the same $H_\infty$ defined in §3.4; it's restated here to contrast it directly with Shannon entropy above.) Because $H_\infty(X) \le H(X)$ always, a source can look "fairly random" on average (decent Shannon entropy) while still being dangerously predictable in the worst case (poor min-entropy) — which is exactly the failure mode the health tests in §3.7 exist to catch.
+
+**Boltzmann entropy** explains *why* a physical noise source has any unpredictability to measure in the first place. In statistical mechanics:
+
+$$
+S = k_B \ln \Omega
+$$
+
+where $k_B$ is Boltzmann's constant and $\Omega$ is the number of microscopic configurations (microstates) consistent with a system's observed macroscopic state. The thermal noise in §3.2.2 (Johnson-Nyquist noise, $V_{thermal} = \sqrt{4 k_B T R \Delta f}$) is a direct macroscopic signature of $\Omega$: at higher temperature $T$, electrons in a resistor explore more microstates, $\Omega$ grows, and so does the physical entropy available to sample from — which is precisely why hotter chips produce measurably stronger thermal-noise entropy sources, and why some TRNG designs deliberately self-heat or temperature-compensate. This is the classical (non-quantum) floor of "true" randomness: unlike a PRNG's algorithmic state, the noise source's unpredictability is rooted in a physically large $\Omega$, not in an attacker's incomplete knowledge of a deterministic process.
+
+Module 22 (Quantum PUF) picks up this thread where classical statistical mechanics stops being the deepest available explanation — quantum measurement offers a source of randomness that isn't just "many hidden microstates" but appears to be *fundamentally* non-deterministic, and pushes the same entropy concept ($S$, $\Omega$) all the way to black hole thermodynamics and quantum gravity.
+
+**References:** NIST SP 800-90B, *Recommendation for the Entropy Sources Used for Random Bit Generation* (2012).
+
 ## 4. Side-Channel Relevance
 
 ### 4.1 PUF as Side-Channel Target
