@@ -35,6 +35,17 @@ const MODULES = [
   { id: "module-29-hw-security-platform", title: "Hardware Security Platform", category: "Hardware Trust", difficulty: "Advanced", duration: "1 hour" },
   { id: "module-30-key-gen-puf", title: "Key Generation with PUF Solutions", category: "Hardware Trust", difficulty: "Intermediate", duration: "1-1.5 hours" },
   { id: "module-31-hw-security-background", title: "Background of Hardware Security", category: "Theory", difficulty: "Beginner", duration: "1-1.5 hours" },
+  { id: "module-32-fips-140-2", title: "FIPS 140-2 Overview", category: "Theory", difficulty: "Beginner", duration: "1 hour" },
+  { id: "module-33-fips-140-3", title: "FIPS 140-3 Modern Framework", category: "Theory", difficulty: "Intermediate", duration: "1 hour" },
+  { id: "module-34-cavp", title: "CAVP and Security Objectives", category: "Theory", difficulty: "Intermediate", duration: "1.5 hours" },
+  { id: "module-35-nist-800-131a", title: "NIST SP 800-131A - Algorithm and Key Transitions", category: "Theory", difficulty: "Intermediate", duration: "1 hour" },
+  { id: "module-36-nist-800-22", title: "NIST SP 800-22 Randomness Tests", category: "Hardware Trust", difficulty: "Intermediate", duration: "1.5 hours" },
+  { id: "module-37-entropy-source", title: "Entropy Source", category: "Hardware Trust", difficulty: "Intermediate", duration: "1.5 hours" },
+  { id: "module-38-iot-security-regulation", title: "IoT Security Regulation: SB-327 & DCMS Code of Practice", category: "Compliance", difficulty: "Intermediate", duration: "1.5 hours" },
+  { id: "module-39-arm-psa", title: "Chip Security Considerations - ARM PSA as an Example", category: "Hardware Trust", difficulty: "Intermediate", duration: "1-1.5 hours" },
+  { id: "module-40-chip-software-attacks", title: "Chip Software Attacks & Malicious Hardware Attacks", category: "Defense", difficulty: "Advanced", duration: "2 hours" },
+  { id: "module-41-puf-secure-coprocessor", title: "PUF-based Secure Co-processor", category: "Hardware Trust", difficulty: "Advanced", duration: "1.5-2 hours" },
+  { id: "module-42-additional-hw-security-techniques", title: "Advanced Side-Channel Hiding Countermeasures", category: "Defense", difficulty: "Intermediate", duration: "1-1.5 hours" },
 ];
 
 export default function LearnPage() {
@@ -49,7 +60,7 @@ export default function LearnPage() {
           📚 Beginner Resources (EN/中文)
         </Link>
       </div>
-      <p className="text-gray-400 mb-6">32 modules covering all aspects of hardware security</p>
+      <p className="text-gray-400 mb-6">43 modules covering all aspects of hardware security</p>
 
       <div className="mb-6 flex gap-4">
         <select className="bg-gray-800 text-gray-200 border border-gray-600 rounded p-2">
@@ -68,6 +79,7 @@ export default function LearnPage() {
           <option value="Boot Security">Boot Security</option>
           <option value="Hardware Trust">Hardware Trust</option>
           <option value="Setup">Setup</option>
+          <option value="Compliance">Compliance</option>
         </select>
         <select className="bg-gray-800 text-gray-200 border border-gray-600 rounded p-2">
           <option value="">All Levels</option>

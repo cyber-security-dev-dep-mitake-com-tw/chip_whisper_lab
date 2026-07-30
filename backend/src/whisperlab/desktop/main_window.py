@@ -16,7 +16,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .panels import BootChainPanel, PufEnrollmentPanel, PufMetricsPanel
+from .panels import (
+    BootChainPanel,
+    PufEnrollmentPanel,
+    PufMetricsPanel,
+    RandomnessTestPanel,
+    SecureCoprocessorPanel,
+)
 from .puf_core import hardware_available
 
 
@@ -40,6 +46,8 @@ class MainWindow(QMainWindow):
         self._add_panel("PUF Enrollment && Reproduction", PufEnrollmentPanel())
         self._add_panel("PUF Metrics", PufMetricsPanel())
         self._add_panel("Secure Boot / HW RoT", BootChainPanel())
+        self._add_panel("NIST SP 800-22 Randomness", RandomnessTestPanel())
+        self._add_panel("Secure Co-processor / Attestation", SecureCoprocessorPanel())
 
         self.sidebar.currentRowChanged.connect(self.stack.setCurrentIndex)
         self.sidebar.setCurrentRow(0)

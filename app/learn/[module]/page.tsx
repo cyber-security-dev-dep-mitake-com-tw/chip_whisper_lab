@@ -221,6 +221,190 @@ hardware flaw is an expensive re-spin — which is why the industry pushes
 
 *Threat taxonomy, Secure HDLC, and standards (ISO/SAE 21434, DARPA SSITH) in this module's \`theory.md\`.*
 `.trim(),
+  "module-32-fips-140-2": `
+### FIPS 140-2: The Cryptographic Boundary and Four Security Levels
+
+FIPS 140-2 requires developers to define a **Cryptographic Boundary** — the
+hardware/software/data-path perimeter inside which crypto accelerators and
+key storage live, physically and logically isolated from the general CPU.
+Levels 3/4 are where hardware security is truly tested:
+
+$$
+\\text{Zeroization triggers} \\iff \\text{tamper detected} \\lor \\text{env. parameter} \\notin [\\,V_{min}, V_{max}\\,] \\times [\\,T_{min}, T_{max}\\,]
+$$
+
+Level 3 requires active tamper-resistant zeroization; Level 4 adds
+Environmental Failure Protection against voltage/temperature glitching.
+
+*Full four-level breakdown and IC design impact in this module's \`theory.md\`.*
+`.trim(),
+  "module-33-fips-140-3": `
+### FIPS 140-3: International Alignment and Mandatory SCA Mitigation
+
+FIPS 140-3 (2019) fully aligns with **ISO/IEC 19790** and **ISO/IEC 24759**,
+and — via NIST SP 800-140F — makes non-invasive attack (DPA/EMA) mitigation
+evidence mandatory rather than optional:
+
+| Dimension | FIPS 140-2 | FIPS 140-3 |
+|---|---|---|
+| International alignment | US/Canada-led | ISO/IEC 19790 & 24759 |
+| SCA defense | Not centrally mandated | Explicit evaluation item (SP 800-140F) |
+
+CMVP stopped accepting new FIPS 140-2 applications in 2021; existing
+certificates move to the Historical List by end of 2026.
+
+*Full transition timeline and life-cycle assurance requirements in this module's \`theory.md\`.*
+`.trim(),
+  "module-34-cavp": `
+### CAVP: Validating the Algorithm Before the Module
+
+CAVP validates that a hardware/software crypto implementation matches NIST's
+test vectors bit-for-bit — a prerequisite for CMVP (FIPS 140) certification:
+
+$$
+\\text{CMVP certification} \\iff \\forall\\, \\text{algorithm} \\in \\text{module}: \\text{CAVP-certified}(\\text{algorithm}) = \\text{true}
+$$
+
+Known Answer Tests (KAT) and Monte Carlo Tests verify correctness and state
+stability; ACVP automates the process over a network API. Three attack case
+studies (Fusée Gelée, ROCA, Xbox 360 Reset Glitch) show why implementation
+correctness — not just algorithm choice — is what breaks in practice.
+
+*Security objectives table and full case studies in this module's \`theory.md\`.*
+`.trim(),
+  "module-35-nist-800-131a": `
+### NIST SP 800-131A: Retiring Weak Algorithms and Key Lengths
+
+Security strength (bits) estimates attacker work factor as $2^{S}$. NIST SP
+800-131A mandates minimum strengths for new hardware designs:
+
+| Strength | Status |
+|---|---|
+| 80-bit (2TDEA, 1024-bit RSA, SHA-1) | Disallowed |
+| 112-bit (3TDEA, 2048-bit RSA) | Legacy decryption only |
+| 128-bit+ (AES-128+, 3072-bit RSA+, ECC P-256, SHA-256+) | Mandatory for new designs |
+
+*Full retirement schedule and hardware resource-scaling impact in this module's \`theory.md\`.*
+`.trim(),
+  "module-36-nist-800-22": `
+### NIST SP 800-22: 15 Statistical Tests for Randomness
+
+Unlike the min-entropy estimation of SP 800-90B, SP 800-22 is a
+hypothesis-testing framework: for each of 15 tests, a P-value is computed and
+compared against a 0.01 significance threshold:
+
+$$
+P\\text{-value} \\ge \\alpha = 0.01 \\implies \\text{pass}
+$$
+
+The suite covers Monobit/Frequency, Runs, Longest Run, Binary Matrix Rank,
+Spectral (DFT), template matching, Maurer's Universal, linear complexity,
+serial, approximate entropy, cumulative sums, and random excursions tests.
+
+*Note: source reference doc was empty; content compiled from NIST SP 800-22's public standard. Full 15-test table and worked Monobit/Runs derivations in this module's \`theory.md\`.*
+`.trim(),
+  "module-37-entropy-source": `
+### Entropy Source: From Thermal Noise to Min-Entropy
+
+Physical entropy sources (thermal noise, ring-oscillator jitter, quantum
+tunneling, metastability) feed TRNGs with information-theoretic security, but
+are slow and environment-sensitive. NIST SP 800-90B mandates **min-entropy**
+over Shannon entropy because cryptography cares about the worst case:
+
+$$
+H_{min} = -\\log_2(p_{max})
+$$
+
+A hybrid TRNG-seeds-DRBG architecture combines a slow, truly-random seed with
+a fast algorithmic PRNG, reseeding periodically for long-term security.
+
+*Full IID/Non-IID estimator breakdown and health-test threshold derivation in this module's \`theory.md\`.*
+`.trim(),
+  "module-38-iot-security-regulation": `
+### IoT Regulation: California SB-327 and UK DCMS Code of Practice
+
+SB-327 (2020) requires connected devices to ship with either a unique
+preprogrammed password or a forced first-use credential change — outlawing
+global defaults like \`admin\`/\`admin\`. The UK DCMS Code of Practice (13
+guidelines, 3 core pillars: no default passwords, vulnerability disclosure,
+software updates) became the blueprint for ETSI EN 303 645 and the binding
+UK PSTI Act 2022.
+
+Both push compliance upstream to silicon: unique device identity (OTP/PUF),
+secure provisioning, HRoT-based secure boot, and debug-port lockdown are now
+baseline requirements for legal market access.
+
+*Full comparative table and IC design implications in this module's \`theory.md\`.*
+`.trim(),
+  "module-39-arm-psa": `
+### ARM PSA: The SPE/NSPE Split and the Secure Partition Manager
+
+ARM's Platform Security Architecture (PSA) turns chip security into a
+repeatable methodology: Analyze (threat modeling), Architect (PSA-FF),
+Implement (Trusted Firmware-M), Certify (PSA Certified levels 1-3+). Its core
+architectural idea is splitting the execution space into a Non-Secure
+Processing Environment (NSPE, the Rich OS) and a Secure Processing
+Environment (SPE), with cryptographic services isolated into independent
+Secure Partitions managed by the Secure Partition Manager (SPM). An
+application can only reach a Secure Partition through the SPM's Secure IPC —
+it can never read SPE memory directly, cutting off the path a buffer overflow
+would otherwise use to steal a key.
+
+*Full PSA Certified level comparison and PSA-FF component breakdown in this module's \`theory.md\`.*
+`.trim(),
+  "module-40-chip-software-attacks": `
+### From Buffer Overflows to Speculative Execution: Software Attacks on Silicon
+
+Software attacks are the most common real-world threat because they're
+remotely exploitable. Classic buffer overflows hijack a return address;
+ROP/JOP chain existing code "gadgets" to bypass the NX bit; and Spectre/
+Meltdown go further, using the CPU's own speculative execution and a cache
+side-channel (Flush+Reload) to leak secrets across a privilege boundary that
+was, on paper, fully enforced. Hardware answers in kind: the NX/XN bit,
+ARM Pointer Authentication (a hardware MAC over the return address), and the
+Memory Tagging Extension (matching physical/logical tags on every access).
+Malicious hardware attacks push further still — voltage/clock glitching,
+laser fault injection, Differential Fault Analysis, micro-probing, FIB
+tampering, and hardware Trojans — countered by environmental sensors with
+zeroization, active shield mesh, and dual-core lockstep execution.
+
+*Full attack/countermeasure table in this module's \`theory.md\`.*
+`.trim(),
+  "module-41-puf-secure-coprocessor": `
+### PUF-based Secure Co-processor: The Mailbox Request/Response Flow
+
+A secure co-processor upgrades a crypto accelerator into an autonomous
+subsystem: a PUF + fuzzy extractor generates the Hardware Unique Key (HUK) at
+runtime (never stored), a Key Management Unit routes it over a physically
+isolated key bus, and a Mailbox/IPC interface is the *only* channel the main
+CPU has — it can submit opcodes and read back results, never touch key
+material.
+
+$$
+K_{ctx} = \\text{KDF}(K_{HUK}, \\ \\text{label} \\,\\|\\, \\text{context}), \\qquad \\text{Attestation} = \\text{Sign}_{K_{ctx}}(\\text{nonce} \\,\\|\\, \\text{boot\\_measurements})
+$$
+
+If a fault-injection attempt is detected mid-reconstruction, the KMU zeroizes
+derived keys within microseconds — since the HUK was never resident in
+static memory, cutting PUF power erases it instantly.
+
+*Full request/response walkthrough and zero-touch provisioning flow in this module's \`theory.md\`.*
+`.trim(),
+  "module-42-additional-hw-security-techniques": `
+### Hiding Countermeasures: Shuffling, Clock Jitter & Dual-Rail Logic
+
+Beyond masking, "hiding" countermeasures attack the *attacker's measurement*,
+not the math. Operation shuffling (a hardware Fisher-Yates permutation)
+randomizes the order sub-operations execute in, breaking the time-alignment
+DPA/CPA depend on. Random clock jitter and dummy-instruction insertion smear
+the same signal further. At the gate level, Dual-Rail Pre-charge Logic
+(WDDL/SABL) splits every signal into true/complement rails and forces a
+pre-charge/evaluation cycle so that switching activity — and therefore power
+draw — stays statistically constant regardless of the data processed,
+directly attacking the power-difference assumption DPA is built on.
+
+*Full hiding-vs-masking comparison in this module's \`theory.md\`.*
+`.trim(),
 };
 
 const THEORY_CONTENT: Record<string, { sections: { title: string; content: string }[] }> = {

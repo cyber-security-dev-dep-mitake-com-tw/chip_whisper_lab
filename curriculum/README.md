@@ -2,7 +2,7 @@
 
 ## Overview
 
-This curriculum covers 32 modules on hardware security, side-channel analysis, fault injection, and post-quantum cryptography. Each module includes theoretical background, simulated labs, and practical exercises using the ChipWhisper platform.
+This curriculum covers 43 modules on hardware security, side-channel analysis, fault injection, and post-quantum cryptography. Each module includes theoretical background, simulated labs, and practical exercises using the ChipWhisper platform.
 
 ## Module List
 
@@ -40,6 +40,17 @@ This curriculum covers 32 modules on hardware security, side-channel analysis, f
 | 29 | Hardware Security Platform | Secure subsystem architecture, hardware mailbox, ARM PSA, OpenTitan, TPM 2.0 | 1 hour | Module 27, Module 28 |
 | 30 | Key Generation with PUF | Fuzzy extractor Gen/Rep, ECC layering, privacy amplification | 1-1.5 hours | Module 04, Module 26 |
 | 31 | Background of Hardware Security | Fabless supply chain threats, Security-by-Design, PPAS, standards | 1-1.5 hours | Module 01 |
+| 32 | FIPS 140-2 Overview | Cryptographic boundary, CSPs, four security levels, zeroization, EFP | 1 hour | Module 01 |
+| 33 | FIPS 140-3 Modern Framework | ISO/IEC 19790/24759 alignment, mandatory SCA mitigation (SP 800-140F), transition timeline | 1 hour | Module 32 |
+| 34 | CAVP and Security Objectives | KAT, Monte Carlo tests, ACVP, security objectives, Fusée Gelée/ROCA/Xbox 360 case studies | 1.5 hours | Module 32, Module 33 |
+| 35 | NIST SP 800-131A - Algorithm and Key Transitions | Security strength metric, algorithm/key-length retirement schedule | 1 hour | Module 02, Module 03 |
+| 36 | NIST SP 800-22 Randomness Tests | 15-test statistical suite, P-value hypothesis testing, Monobit/Runs worked examples | 1.5 hours | Module 04, Module 37 |
+| 37 | Entropy Source | Thermal noise, RO jitter, quantum tunneling, metastability, min-entropy (SP 800-90B) | 1.5 hours | Module 04, Module 36 |
+| 38 | IoT Security Regulation: SB-327 & DCMS Code of Practice | Unique-password mandates, vulnerability disclosure, secure updates, HRoT/OTP/PUF requirements | 1.5 hours | Module 01, Module 04, Module 05 |
+| 39 | Chip Security Considerations - ARM PSA as an Example | PSA Analyze/Architect/Implement/Certify, PSA-FF (SPE/NSPE, Secure Partitions, SPM), PSA Certified levels | 1-1.5 hours | Module 05, Module 27 |
+| 40 | Chip Software Attacks & Malicious Hardware Attacks | Buffer overflow, ROP/JOP, Spectre/Meltdown, NX/PAC/MTE, fault injection, FIB, hardware Trojans | 2 hours | Module 05, Module 11, Module 17 |
+| 41 | PUF-based Secure Co-processor | KMU, Crypto Cluster, Mailbox/IPC, keyless storage, PUF-gated secure boot, zero-touch provisioning | 1.5-2 hours | Module 04, Module 27, Module 30 |
+| 42 | Advanced Side-Channel Hiding Countermeasures | Shuffling, clock jitter, dummy operations, dual-rail pre-charge logic, power equalizers | 1-1.5 hours | Module 06, Module 10 |
 
 ## Supplementary Resources
 

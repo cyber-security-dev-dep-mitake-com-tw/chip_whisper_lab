@@ -308,6 +308,116 @@ const MOCK_MODULES: Module[] = [
     duration: "1-1.5 hours",
     lab_url: "#",
   },
+  {
+    id: "module-32-fips-140-2",
+    title: "FIPS 140-2 Overview",
+    description:
+      "The cryptographic boundary, Critical Security Parameters (CSPs), and the four FIPS 140-2 security levels — from NIST-approved algorithms only up to tamper-resistant zeroization and Environmental Failure Protection.",
+    category: "compliance",
+    difficulty: "beginner",
+    duration: "1 hour",
+    lab_url: "#",
+  },
+  {
+    id: "module-33-fips-140-3",
+    title: "FIPS 140-3 Modern Framework",
+    description:
+      "Why NIST replaced FIPS 140-2, alignment with ISO/IEC 19790 and 24759, the new mandatory non-invasive (side-channel) attack mitigation requirement, and the FIPS 140-2 to 140-3 transition timeline.",
+    category: "compliance",
+    difficulty: "intermediate",
+    duration: "1 hour",
+    lab_url: "#",
+  },
+  {
+    id: "module-34-cavp",
+    title: "CAVP and Security Objectives",
+    description:
+      "The Cryptographic Algorithm Validation Program (CAVP), Known Answer Tests, Monte Carlo tests, ACVP automation, the four core security objectives, and three landmark hardware attack case studies (Fusée Gelée, ROCA, Xbox 360 Reset Glitch).",
+    category: "compliance",
+    difficulty: "intermediate",
+    duration: "1.5 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-35-nist-800-131a",
+    title: "NIST SP 800-131A - Algorithm and Key Transitions",
+    description:
+      "The security-strength metric and NIST's retirement schedule for symmetric, asymmetric, and hash algorithms/key-lengths, and its direct impact on hardware crypto-IP sizing and future-proofing.",
+    category: "compliance",
+    difficulty: "intermediate",
+    duration: "1 hour",
+    lab_url: "#",
+  },
+  {
+    id: "module-36-nist-800-22",
+    title: "NIST SP 800-22 Randomness Tests",
+    description:
+      "The 15-test NIST SP 800-22 statistical suite for randomness (Monobit, Runs, Spectral, Universal, Serial, Cumulative Sums, Random Excursions, and more), the P-value hypothesis-testing framework, and how it complements SP 800-90B min-entropy estimation.",
+    category: "hardware",
+    difficulty: "intermediate",
+    duration: "1.5 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-37-entropy-source",
+    title: "Entropy Source",
+    description:
+      "Physical entropy sources (thermal noise, ring-oscillator jitter, quantum tunneling, metastability) vs. software entropy pools, entropy conditioning/whitening, the hybrid TRNG-seeds-DRBG architecture, and NIST SP 800-90B min-entropy evaluation.",
+    category: "hardware",
+    difficulty: "intermediate",
+    duration: "1.5 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-38-iot-security-regulation",
+    title: "IoT Security Regulation: SB-327 & DCMS Code of Practice",
+    description:
+      "California SB-327's unique-password mandate and the UK DCMS Code of Practice's 13 guidelines (no default passwords, vulnerability disclosure, secure updates), and how both drive OTP/PUF device identity and HRoT secure boot requirements in silicon.",
+    category: "compliance",
+    difficulty: "intermediate",
+    duration: "1.5 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-39-arm-psa",
+    title: "Chip Security Considerations - ARM PSA as an Example",
+    description:
+      "ARM Platform Security Architecture as a real-world chip security framework: the Analyze/Architect/Implement/Certify methodology, the PSA-FF SPE/NSPE split, Secure Partitions, the SPM, and PSA Certified assurance levels.",
+    category: "hardware",
+    difficulty: "intermediate",
+    duration: "1-1.5 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-40-chip-software-attacks",
+    title: "Chip Software Attacks & Malicious Hardware Attacks",
+    description:
+      "Software attack vectors (buffer overflow, ROP/JOP, speculative execution) and their hardware countermeasures (NX bit, Pointer Authentication, MTE), plus malicious physical attacks (fault injection, invasive probing, hardware Trojans) and on-chip defenses.",
+    category: "defense",
+    difficulty: "advanced",
+    duration: "2 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-41-puf-secure-coprocessor",
+    title: "PUF-based Secure Co-processor",
+    description:
+      "Architecture of a PUF-backed secure co-processor: KMU, Crypto Cluster, and Mailbox/IPC; keyless storage at rest, PUF-gated secure boot, zero-touch provisioning, and the host/co-processor request-response flow with key derivation and attestation.",
+    category: "hardware",
+    difficulty: "advanced",
+    duration: "1.5-2 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-42-additional-hw-security-techniques",
+    title: "Advanced Side-Channel Hiding Countermeasures",
+    description:
+      "Shuffling (randomized operation order), time-domain hiding (clock jitter, dummy operations), and amplitude-domain hiding (dual-rail pre-charge logic, power equalizers) as complements to masking against DPA/CPA.",
+    category: "defense",
+    difficulty: "intermediate",
+    duration: "1-1.5 hours",
+    lab_url: "#",
+  },
 ];
 
 export function useExperiments() {
