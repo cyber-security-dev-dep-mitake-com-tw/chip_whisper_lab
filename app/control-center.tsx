@@ -67,18 +67,54 @@ const chipProfiles: ChipProfile[] = [
   { id: "efm32gg", name: "EFM32GG11", arch: "ARM Cortex-M4F", target: "CW308T-EFM32GG11", clock: "24 MHz", protocol: "SimpleSerial AES", peak: 0.168, trigger: 3480, noise: 14.1, samples: 5000, seed: 137 },
 ];
 
-function generateTrace(chip: ChipProfile, bars = 48): number[] {
-  let state = chip.seed;
-  const next = () => {
-    // Deterministic LCG so the same chip always renders the same trace shape.
+function makeLcg(seed: number) {
+  let state = seed;
+  return () => {
+    // Deterministic LCG so the same seed always renders the same shape.
     state = (state * 1103515245 + 12345) & 0x7fffffff;
     return state / 0x7fffffff;
   };
+}
+
+function generateTrace(chip: ChipProfile, seedOffset = 0, bars = 48): number[] {
+  const next = makeLcg(chip.seed + seedOffset);
   const base = chip.peak * 100;
   return Array.from({ length: bars }, () => {
     const jitter = (next() - 0.5) * base * 0.9;
     return Math.max(6, Math.round(base * 0.6 + jitter));
   });
+}
+
+function generateCorrelation(seed: number, guesses = 16) {
+  const next = makeLcg(seed);
+  const winner = Math.floor(next() * guesses);
+  return Array.from({ length: guesses }, (_, index) =>
+    index === winner ? 0.72 + next() * 0.2 : 0.08 + next() * 0.34,
+  );
+}
+
+type Capture = {
+  id: string;
+  chipId: string;
+  chipName: string;
+  protocol: string;
+  target: string;
+  samples: number;
+  gain: number;
+  clock: string;
+  peak: number;
+  trigger: number;
+  noise: number;
+  trace: number[];
+  capturedAt: number;
+};
+
+function hashSeed(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash * 31 + id.charCodeAt(i)) & 0x7fffffff;
+  }
+  return hash || 1;
 }
 
 export function ControlCenter() {
@@ -87,6 +123,12 @@ export function ControlCenter() {
   const [installing, setInstalling] = useState(false);
   const [chipId, setChipId] = useState(chipProfiles[0].id);
   const [gain, setGain] = useState(22);
+  const [profileApplied, setProfileApplied] = useState(false);
+  const [capturing, setCapturing] = useState(false);
+  const [captureCount, setCaptureCount] = useState(0);
+  const [lastCapture, setLastCapture] = useState<Capture | null>(null);
+  const [experiments, setExperiments] = useState<Capture[]>([]);
+  const [loadedExperiment, setLoadedExperiment] = useState<Capture | null>(null);
 
   const chip = chipProfiles.find((item) => item.id === chipId) ?? chipProfiles[0];
   const [samples, setSamples] = useState(chip.samples);
@@ -105,6 +147,8 @@ export function ControlCenter() {
     setChipId(nextId);
     const nextChip = chipProfiles.find((item) => item.id === nextId);
     if (nextChip) setSamples(nextChip.samples);
+    setProfileApplied(false);
+    setLastCapture(null);
   }
 
   const readiness = useMemo(
@@ -115,6 +159,49 @@ export function ControlCenter() {
   function startSafeInstall() {
     setInstalling(true);
     window.setTimeout(() => setInstalling(false), 1700);
+  }
+
+  function applyCaptureProfile() {
+    setProfileApplied(true);
+    setLastCapture(null);
+  }
+
+  function captureOneTrace() {
+    if (!profileApplied || capturing) return;
+    setCapturing(true);
+    window.setTimeout(() => {
+      const nextCount = captureCount + 1;
+      const capture: Capture = {
+        id: `cap-${chip.id}-${Date.now()}`,
+        chipId: chip.id,
+        chipName: chip.name,
+        protocol: chip.protocol,
+        target: chip.target,
+        samples,
+        gain,
+        clock: chip.clock,
+        peak: Number((chip.peak * (1 + (gain - 22) / 400)).toFixed(3)),
+        trigger: chip.trigger,
+        noise: Number((chip.noise * (1 - (gain - 22) / 500)).toFixed(1)),
+        trace: generateTrace(chip, nextCount * 7),
+        capturedAt: Date.now(),
+      };
+      setCaptureCount(nextCount);
+      setLastCapture(capture);
+      setCapturing(false);
+    }, 900);
+  }
+
+  function saveExperiment() {
+    if (!lastCapture) return;
+    setExperiments((prev) =>
+      prev.some((item) => item.id === lastCapture.id) ? prev : [lastCapture, ...prev],
+    );
+  }
+
+  function loadExperiment(capture: Capture) {
+    setLoadedExperiment(capture);
+    setActive("analysis");
   }
 
   return (
@@ -307,12 +394,50 @@ export function ControlCenter() {
                   <p className="kicker">LEAKAGE ANALYSIS</p>
                   <h3>Correlation vs. key guess</h3>
                 </div>
-                <span className="unsaved">NO EXPERIMENT LOADED</span>
+                <span className={loadedExperiment ? "unsaved applied" : "unsaved"}>
+                  {loadedExperiment ? "EXPERIMENT LOADED" : "NO EXPERIMENT LOADED"}
+                </span>
               </div>
-              <p className="safety-note">
-                Run a capture from the Capture tab, or open a saved experiment
-                from Experiments, to compute CPA/DPA correlation traces here.
-              </p>
+              {loadedExperiment ? (
+                <>
+                  <p className="chip-subline">
+                    {loadedExperiment.chipName} · {loadedExperiment.protocol} ·{" "}
+                    {loadedExperiment.samples.toLocaleString()} samples ·{" "}
+                    {new Date(loadedExperiment.capturedAt).toLocaleTimeString()}
+                  </p>
+                  {(() => {
+                    const correlation = generateCorrelation(hashSeed(loadedExperiment.id));
+                    const bestIndex = correlation.indexOf(Math.max(...correlation));
+                    return (
+                      <>
+                        <div className="trace-plot correlation-plot" aria-label="Simulated correlation vs. key guess">
+                          <div className="axis-label axis-y">ρ</div>
+                          <div className="trace-bars correlation-bars">
+                            {correlation.map((value, index) => (
+                              <span
+                                className={index === bestIndex ? "corr-bar best" : "corr-bar"}
+                                key={index}
+                                style={{ height: `${value * 100}%` }}
+                              />
+                            ))}
+                          </div>
+                          <div className="axis-label axis-x">key byte guess (0x00–0x0F)</div>
+                        </div>
+                        <p className="safety-note">
+                          Peak correlation ρ = {correlation[bestIndex].toFixed(3)} at guess
+                          0x{bestIndex.toString(16).toUpperCase().padStart(2, "0")} — simulated
+                          recovered key byte.
+                        </p>
+                      </>
+                    );
+                  })()}
+                </>
+              ) : (
+                <p className="safety-note">
+                  Run a capture from the Capture tab, or open a saved experiment
+                  from Experiments, to compute CPA/DPA correlation traces here.
+                </p>
+              )}
             </section>
           )}
 
@@ -326,7 +451,18 @@ export function ControlCenter() {
                     {chip.name} · {chip.arch} · {chip.target}
                   </p>
                 </div>
-                <span className="unsaved">NOT APPLIED</span>
+                <div className="profile-status">
+                  <span className={profileApplied ? "unsaved applied" : "unsaved"}>
+                    {profileApplied ? "APPLIED" : "NOT APPLIED"}
+                  </span>
+                  <button
+                    className="quiet-button"
+                    onClick={applyCaptureProfile}
+                    type="button"
+                  >
+                    {profileApplied ? "Re-apply" : "Apply profile"}
+                  </button>
+                </div>
               </div>
               <label className="range-field">
                 <span>
@@ -368,13 +504,54 @@ export function ControlCenter() {
                   </select>
                 </label>
               </div>
-              <button className="capture-button" type="button">
-                <span>●</span> Capture one trace
+              <button
+                className="capture-button"
+                disabled={!profileApplied || capturing}
+                onClick={captureOneTrace}
+                title={profileApplied ? undefined : "Apply the capture profile first"}
+                type="button"
+              >
+                <span>●</span>{" "}
+                {capturing
+                  ? "Capturing…"
+                  : profileApplied
+                    ? "Capture one trace"
+                    : "Apply profile to capture"}
               </button>
               <p className="safety-note">
                 Simulator data only. Hardware controls remain locked until setup
                 and device confirmation pass.
               </p>
+              {lastCapture && (
+                <div className="capture-result">
+                  <div>
+                    <strong>Captured ✓</strong>
+                    <span>
+                      {lastCapture.chipName} · {lastCapture.samples.toLocaleString()}{" "}
+                      samples · {new Date(lastCapture.capturedAt).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  <div className="capture-result-actions">
+                    <button
+                      className="quiet-button"
+                      disabled={experiments.some((item) => item.id === lastCapture.id)}
+                      onClick={saveExperiment}
+                      type="button"
+                    >
+                      {experiments.some((item) => item.id === lastCapture.id)
+                        ? "Saved ✓"
+                        : "Save as experiment"}
+                    </button>
+                    <button
+                      className="quiet-button"
+                      onClick={() => loadExperiment(lastCapture)}
+                      type="button"
+                    >
+                      Load into Analysis →
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
@@ -385,12 +562,40 @@ export function ControlCenter() {
                   <p className="kicker">EXPERIMENTS</p>
                   <h3>Saved captures</h3>
                 </div>
-                <span className="unsaved">0 SAVED</span>
+                <span className={experiments.length ? "unsaved applied" : "unsaved"}>
+                  {experiments.length} SAVED
+                </span>
               </div>
-              <p className="safety-note">
-                No experiments saved yet. Capture a trace from the Capture tab
-                and save it to build a comparable experiment history here.
-              </p>
+              {experiments.length ? (
+                <div className="experiment-list">
+                  {experiments.map((item) => (
+                    <div className="experiment-row" key={item.id}>
+                      <div>
+                        <strong>{item.chipName}</strong>
+                        <span>
+                          {item.protocol} · {item.samples.toLocaleString()} samples ·{" "}
+                          {new Date(item.capturedAt).toLocaleTimeString()}
+                          {loadedExperiment?.id === item.id ? " · loaded" : ""}
+                        </span>
+                      </div>
+                      <button
+                        className="quiet-button"
+                        onClick={() => loadExperiment(item)}
+                        type="button"
+                      >
+                        {loadedExperiment?.id === item.id
+                          ? "Loaded in Analysis ✓"
+                          : "Load into Analysis →"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="safety-note">
+                  No experiments saved yet. Capture a trace from the Capture tab
+                  and save it to build a comparable experiment history here.
+                </p>
+              )}
             </section>
           )}
         </div>

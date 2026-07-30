@@ -483,9 +483,10 @@ button {
   transform: translateY(-1px);
 }
 
-.primary-button:disabled {
+.primary-button:disabled,
+.capture-button:disabled {
   opacity: 0.65;
-  cursor: wait;
+  cursor: not-allowed;
   transform: none;
 }
 
@@ -509,6 +510,103 @@ button {
 .unsaved {
   border-color: #5d5036;
   color: var(--amber);
+}
+
+.unsaved.applied {
+  border-color: #3c5146;
+  color: var(--green);
+}
+
+.profile-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.capture-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #3c5146;
+  border-radius: 8px;
+  background: rgba(108, 243, 91, 0.05);
+}
+
+.capture-result strong {
+  display: block;
+  color: var(--green);
+  font-size: 12px;
+}
+
+.capture-result > div > span {
+  color: var(--muted);
+  font: 10px/1.4 var(--mono);
+}
+
+.capture-result-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.capture-result-actions .quiet-button {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.capture-result-actions .quiet-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.experiment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.experiment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.experiment-row strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 540;
+}
+
+.experiment-row span {
+  color: var(--muted);
+  font: 10px/1.4 var(--mono);
+}
+
+.experiment-row .quiet-button {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.correlation-bars span.corr-bar {
+  background: linear-gradient(180deg, #9fd8ff, #4c8fce);
+  box-shadow: 0 0 6px rgba(76, 143, 206, 0.25);
+}
+
+.correlation-bars span.corr-bar.best {
+  background: linear-gradient(180deg, #c2ffad, var(--green-strong));
+  box-shadow: 0 0 8px rgba(108, 243, 91, 0.45);
+  opacity: 1;
 }
 
 .trace-plot {
