@@ -3,6 +3,7 @@
 import { use } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { useModule } from "@/lib/hooks";
+import { useTranslations } from "@/lib/i18n";
 import { TheoryMarkdown } from "@/components/theory-markdown";
 import Link from "next/link";
 
@@ -97,6 +98,128 @@ appears, in this framework, to be the substrate spacetime geometry itself emerge
 **References:** NIST SP 800-90B (2012) · Hawking, *Comm. Math. Phys.* 43(3), 199–220 (1975) ·
 Strominger & Vafa, *Phys. Lett. B* 379(1-4), 99–104 (1996) · Ryu & Takayanagi, *Phys. Rev.
 Lett.* 96(18), 181602 (2006).
+`.trim(),
+  "module-25-quantum-tunneling-puf": `
+### Quantum Tunneling PUF: Fowler-Nordheim Tunneling & Oxide Breakdown
+
+A quantum tunneling PUF pushes the entropy source down to atomic-scale quantum
+randomness in the gate oxide, instead of macroscopic delay/threshold-voltage
+variation. Tunneling current follows the Fowler-Nordheim relation:
+
+$$
+J_{FN} = A E_{ox}^2 \\exp\\left(-\\frac{B}{E_{ox}}\\right), \\qquad E_{ox} = \\frac{V_{ox}}{T_{ox}}
+$$
+
+Because $J_{FN}$ is *exponentially* sensitive to oxide thickness $T_{ox}$, even a
+single-atomic-layer (~0.3 nm) thickness fluctuation between two adjacent cells
+produces an order-of-magnitude tunneling-current gap. Stressing two adjacent
+cells at high voltage drives one into **hard oxide breakdown** — a permanent,
+irreversible conductive filament — while the other stays insulating; comparing
+their read currents (differing by $>10^4\\times$) yields a response bit that is
+stable enough to skip ECC entirely ("zero-ECC").
+
+*Full derivation, comparison table vs. delay/memory-based PUFs, and references in this module's \`theory.md\`.*
+`.trim(),
+  "module-26-puf-applications": `
+### PUF-based Applications: Keyless Storage & Fuzzy Extraction
+
+A PUF's core security value comes from **keyless storage**: no key is present
+while the chip is powered off, only reconstructed on demand via a fuzzy
+extractor:
+
+$$
+\\text{Gen}(R) \\to (K, W), \\qquad \\text{Rep}(R', W) \\to K \\ \\text{when}\\ \\mathrm{HD}(R,R') \\le t
+$$
+
+where $W$ (helper data) is stored in the clear yet leaks nothing about $K$.
+This single primitive underlies seven concrete applications covered in
+\`theory.md\`: key generation, IC anti-counterfeiting, lightweight
+challenge-response authentication, TRNG entropy, firmware key wrapping,
+HUK-based key derivation/isolation, and zero-touch cloud onboarding.
+
+*Reference architecture diagrams and full walkthroughs in this module's \`theory.md\`.*
+`.trim(),
+  "module-27-puf-hrot-architecture": `
+### PUF-based Hardware Root of Trust: Secure Boot Chain
+
+A PUF becomes a Hardware Root of Trust (HRoT) only once combined with an ECC/
+helper-data controller, crypto accelerators, and a physically isolated secure
+key bus. The resulting PUF-driven secure boot sequence gates CPU release on a
+signature check:
+
+$$
+\\text{Boot proceeds} \\iff \\mathrm{Verify}_{K_{HUK}}(\\text{Signature}, \\mathrm{Digest}(\\text{Bootloader})) = \\text{true}
+$$
+
+The HRoT's memory map is hidden even from a rooted Rich OS, and physical
+tamper detection triggers zeroization — since the key was never resident in
+static memory, cutting power erases it instantly.
+
+*Full lifecycle management (enrollment, OTA, revocation) and attack-resistance table in this module's \`theory.md\`.*
+`.trim(),
+  "module-28-efuse-antifuse": `
+### eFuse vs. Anti-Fuse: Two Physical OTP Mechanisms
+
+eFuse programs by **destroying** a conductor (electromigration blows a
+polysilicon/metal link, raising its resistance by orders of magnitude); Anti-Fuse
+programs by **creating** one (a high voltage triggers dielectric breakdown,
+punching a conductive filament through an oxide — the same physical mechanism
+as the Module 25 quantum tunneling PUF):
+
+| | eFuse | Anti-Fuse |
+|---|---|---|
+| Native state | Low R (conductive) | High R (insulating) |
+| Programmed | High R (link blown) | Low R (filament punched) |
+| RE resistance | Lower (visible after delayering) | Higher (buried in dielectric) |
+
+*Comparison table, security implications, and references in this module's \`theory.md\` (note: source reference doc was empty; content compiled from standard OTP literature).*
+`.trim(),
+  "module-29-hw-security-platform": `
+### Hardware Security Platform: The Mailbox Mechanism
+
+A hardware security platform packages the PUF/HRoT, crypto accelerators, and a
+dedicated secure CPU into an isolated subsystem the Rich OS cannot read
+directly. Communication happens only through a hardware mailbox:
+
+$$
+\\text{MainOS} \\xrightarrow{\\text{cmd+data}} \\text{Mailbox} \\xrightarrow{\\text{IRQ}} \\text{Secure CPU} \\xrightarrow{\\text{ACL+crypto}} \\text{Mailbox} \\xrightarrow{\\text{result only}} \\text{MainOS}
+$$
+
+The main system only ever receives a *computation result* — never plaintext
+key material — which defeats key theft even from a fully root-exploited OS.
+ARM PSA, OpenTitan, and TPM 2.0 are the industry's standardized realizations
+of this architecture.
+
+*Full architecture breakdown in this module's \`theory.md\`.*
+`.trim(),
+  "module-30-key-gen-puf": `
+### Key Generation with PUF: ECC + Privacy Amplification
+
+Raw PUF output has a bit error rate (BER) of $1\\%$–$15\\%$ — incompatible with
+cryptography's avalanche effect, which requires $100\\%$-stable keys. A
+multi-layer fuzzy extractor fixes this: a repetition code (majority vote)
+followed by a BCH/Reed-Muller code performs **information reconciliation**,
+then **privacy amplification** (a universal hash or SHA-256 compression)
+turns a long, entropy-sparse corrected string into a short, full-entropy key
+— e.g. compressing 2048 bits with only 300 bits of real entropy into a
+full-entropy 256-bit key.
+
+*Full Gen/Rep walkthrough, ECC layering rationale, and helper-data zero-leakage requirement in this module's \`theory.md\`.*
+`.trim(),
+  "module-31-hw-security-background": `
+### Background of Hardware Security: Layer 0 and the Fabless Supply Chain
+
+Software security assumes hardware faithfully executes instructions — an
+assumption that breaks down once you account for the fragmented, globalized,
+fabless IC supply chain (3rd-party IP, offshore foundries, OSAT). Four threat
+categories result: Hardware Trojans (trigger + payload), side-channel attacks,
+reverse engineering/IP piracy, and counterfeiting/overproduction. Because
+silicon is physically immutable post-tape-out, the only complete fix for a
+hardware flaw is an expensive re-spin — which is why the industry pushes
+**Security-by-Design**, expanding PPA (performance/power/area) into **PPAS**
+(+ security) from the specification stage onward.
+
+*Threat taxonomy, Secure HDLC, and standards (ISO/SAE 21434, DARPA SSITH) in this module's \`theory.md\`.*
 `.trim(),
 };
 
@@ -193,6 +316,7 @@ export default function ModuleDetailPage({
 }) {
   const { module: moduleId } = use(params);
   const { data: mod } = useModule(moduleId);
+  const t = useTranslations();
   const markdownTheory = THEORY_MARKDOWN[moduleId];
   const theory = THEORY_CONTENT[moduleId] || DEFAULT_THEORY;
 
@@ -202,7 +326,7 @@ export default function ModuleDetailPage({
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">MODULE</p>
+            <p className="eyebrow">{t("learnModule.eyebrow")}</p>
             <h1>{mod.title}</h1>
           </div>
           <div className="top-actions">
@@ -210,7 +334,7 @@ export default function ModuleDetailPage({
               href="/learn"
               className="rounded-lg border border-[var(--line)] bg-transparent px-4 py-2 text-[11px] font-mono text-[var(--muted)] transition hover:border-[#3a5245] hover:text-[var(--ink)]"
             >
-              ← Back
+              {t("learnModule.back")}
             </Link>
           </div>
         </header>
@@ -232,7 +356,7 @@ export default function ModuleDetailPage({
 
           <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">
             <p className="text-[10px] font-mono uppercase tracking-wider text-[var(--green)]">
-              About
+              {t("learnModule.about")}
             </p>
             <p className="mt-2 text-[13px] text-[var(--muted)] leading-relaxed">
               {mod.description}
@@ -241,7 +365,7 @@ export default function ModuleDetailPage({
 
           <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">
             <p className="mb-4 text-[10px] font-mono uppercase tracking-wider text-[var(--green)]">
-              Theory
+              {t("learnModule.theory")}
             </p>
             <div className="space-y-5">
               {theory.sections.map((section, i) => (
@@ -260,33 +384,32 @@ export default function ModuleDetailPage({
 
           <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">
             <p className="mb-2 text-[10px] font-mono uppercase tracking-wider text-[var(--green)]">
-              Further Reading
+              {t("learnModule.furtherReading")}
             </p>
             <p className="text-[12px] text-[var(--muted)] leading-relaxed">
-              Free, beginner-level PDFs and papers (English + 中文), including a dedicated
-              entropy-source / TRNG reading list.
+              {t("learnModule.furtherReadingBody")}
             </p>
             <Link
               href="/learn/resources"
               className="mt-3 inline-block rounded-lg border border-[var(--line)] px-3 py-1.5 text-[11px] font-mono text-[var(--green)] transition hover:border-[#3a5245]"
             >
-              Beginner Hardware Security Resources →
+              {t("learnModule.furtherReadingLink")}
             </Link>
           </div>
 
           {mod.lab_url && (
             <div className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">
               <p className="mb-3 text-[10px] font-mono uppercase tracking-wider text-[var(--green)]">
-                Lab Notebook
+                {t("learnModule.labNotebook")}
               </p>
               <div className="flex h-[400px] items-center justify-center rounded-lg border border-dashed border-[var(--line)] bg-[#111915]">
                 <div className="text-center">
                   <span className="block text-[32px]">📓</span>
                   <span className="mt-2 block text-[13px] text-[var(--muted)]">
-                    Interactive lab notebook
+                    {t("learnModule.labNotebookInteractive")}
                   </span>
                   <span className="mt-1 block text-[10px] text-[var(--dim)]">
-                    Jupyter notebook embedded via iframe
+                    {t("learnModule.labNotebookEmbed")}
                   </span>
                 </div>
               </div>
@@ -298,13 +421,13 @@ export default function ModuleDetailPage({
               href="/experiments"
               className="flex-1 rounded-lg bg-[var(--green)] px-4 py-3 text-center text-[11px] font-mono font-semibold text-[#10200f] transition hover:bg-[#b2ff9f]"
             >
-              Start Experiment
+              {t("learnModule.startExperiment")}
             </Link>
             <Link
               href="/traces"
               className="flex-1 rounded-lg border border-[var(--line)] bg-transparent px-4 py-3 text-center text-[11px] font-mono text-[var(--muted)] transition hover:border-[#3a5245] hover:text-[var(--ink)]"
             >
-              View Sample Traces
+              {t("learnModule.viewSampleTraces")}
             </Link>
           </div>
         </div>

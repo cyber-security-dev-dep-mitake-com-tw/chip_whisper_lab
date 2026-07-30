@@ -1,0 +1,137 @@
+name: Desktop Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-desktop:
+    name: Build Windows desktop installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install desktop app and PyInstaller
+        run: |
+          pip install pyinstaller
+          pip install -e "backend[desktop]"
+      - name: Build whisperlab-desktop.exe
+        run: |
+          pyinstaller --windowed --onefile --name whisperlab-desktop backend/src/whisperlab/desktop/__main__.py
+      - name: Upload raw exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-exe
+          path: dist/whisperlab-desktop.exe
+
+      - name: Install WiX toolset (best effort)
+        id: wix_install
+        continue-on-error: true
+        run: dotnet tool install --global wix
+
+      - name: Package .msi with WiX (best effort)
+        if: steps.wix_install.outcome == 'success'
+        id: wix_package
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $version = "${env:GITHUB_REF_NAME}".TrimStart("v")
+          if ([string]::IsNullOrWhiteSpace($version)) { $version = "0.1.0" }
+
+          @"
+          <?xml version='1.0' encoding='UTF-8'?>
+          <Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+            <Package Name='WhisperLab Desktop' Manufacturer='WhisperLab' Version='$version'
+                     UpgradeCode='6f6f7a2e-6b7a-4a1a-9a2e-1f2b3c4d5e6f'>
+              <MediaTemplate EmbedCab='yes' />
+              <StandardDirectory Id='ProgramFiles6432Folder'>
+                <Directory Id='INSTALLFOLDER' Name='WhisperLab Desktop' />
+              </StandardDirectory>
+              <Feature Id='MainFeature'>
+                <ComponentGroupRef Id='ProductComponents' />
+              </Feature>
+              <ComponentGroup Id='ProductComponents' Directory='INSTALLFOLDER'>
+                <Component Id='MainExecutable' Guid='*'>
+                  <File Id='WhisperLabDesktopExe' Source='dist\whisperlab-desktop.exe' KeyPath='yes' />
+                </Component>
+              </ComponentGroup>
+            </Package>
+          </Wix>
+          "@ | Out-File -FilePath whisperlab-desktop.wxs -Encoding utf8
+
+          wix build whisperlab-desktop.wxs -out "whisperlab-desktop-${env:GITHUB_REF_NAME}.msi"
+
+      - name: Upload msi artifact (best effort)
+        if: steps.wix_package.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-msi
+          path: whisperlab-desktop-*.msi
+
+  build-macos-desktop:
+    name: Build macOS desktop installer
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install desktop app and PyInstaller
+        run: |
+          pip install pyinstaller
+          pip install -e "backend[desktop]"
+      - name: Build whisperlab-desktop.app
+        run: |
+          pyinstaller --windowed --onefile --name whisperlab-desktop backend/src/whisperlab/desktop/__main__.py
+
+      - name: Package .dmg
+        run: |
+          mkdir -p dmg-root
+          cp -R "dist/whisperlab-desktop.app" dmg-root/
+          hdiutil create -volname "WhisperLab Desktop" \
+                         -srcfolder dmg-root \
+                         -ov -format UDZO \
+                         "whisperlab-desktop-${GITHUB_REF_NAME}.dmg"
+
+      - name: Package .pkg
+        run: |
+          pkgbuild --identifier com.whisperlab.desktop \
+                   --version "${GITHUB_REF_NAME#v}" \
+                   --component "dist/whisperlab-desktop.app" \
+                   --install-location /Applications \
+                   "whisperlab-desktop-${GITHUB_REF_NAME}.pkg"
+
+      - name: Upload macOS desktop artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-desktop-installers
+          path: |
+            whisperlab-desktop-${{ github.ref_name }}.dmg
+            whisperlab-desktop-${{ github.ref_name }}.pkg
+
+  create-desktop-release:
+    name: Attach desktop installers to GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-windows-desktop, build-macos-desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all desktop artifacts
+        uses: actions/download-artifact@v4
+      - name: Create/update Release with desktop installers
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            windows-desktop-exe/*
+            windows-desktop-msi/*
+            macos-desktop-installers/*
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { LocaleProvider } from "@/lib/i18n";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <LocaleProvider>{children}</LocaleProvider>
       </body>
     </html>
   );

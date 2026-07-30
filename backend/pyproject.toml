@@ -10,6 +10,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
   "alembic>=1.14,<2",
   "asyncpg>=0.30,<1",
+  "chipwhisperer>=5.7,<6",
   "fastapi>=0.115,<1",
   "httpx>=0.28,<1",
   "numpy>=1.26,<2",
@@ -25,9 +26,13 @@ dev = [
   "pytest-asyncio>=0.25,<1",
   "ruff>=0.9,<1",
 ]
+desktop = [
+  "PySide6>=6.7,<7",
+]
 
 [project.scripts]
 whisperlab-api = "whisperlab.main:run"
+whisperlab-desktop = "whisperlab.desktop.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/whisperlab"]

@@ -238,6 +238,76 @@ const MOCK_MODULES: Module[] = [
     duration: "3-4 hours",
     lab_url: "#",
   },
+  {
+    id: "module-25-quantum-tunneling-puf",
+    title: "Quantum Tunneling PUF",
+    description:
+      "Atomic-scale quantum entropy via Fowler-Nordheim tunneling and gate-oxide hard breakdown (e.g. NeoPUF): near-100% reliability, zero-ECC, and aging immunity.",
+    category: "hardware",
+    difficulty: "advanced",
+    duration: "1-1.5 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-26-puf-applications",
+    title: "PUF-based Applications",
+    description:
+      "From keyless storage and fuzzy extraction to IC anti-counterfeiting, lightweight device authentication, firmware key wrapping, key derivation, and zero-touch cloud onboarding.",
+    category: "hardware",
+    difficulty: "intermediate",
+    duration: "1.5-2 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-27-puf-hrot-architecture",
+    title: "PUF-based Hardware Root of Trust Architecture",
+    description:
+      "How a PUF integrates with ECC, crypto accelerators, and a secure key bus into a Hardware Root of Trust: PUF-driven secure boot, lifecycle management, and tamper resistance.",
+    category: "hardware",
+    difficulty: "advanced",
+    duration: "1.5-2 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-28-efuse-antifuse",
+    title: "eFuse vs. Anti-Fuse Storage",
+    description:
+      "Electromigration-based eFuse vs. dielectric-breakdown-based Anti-Fuse OTP storage: physical mechanisms, reverse-engineering resistance, and root-of-trust key storage trade-offs.",
+    category: "hardware",
+    difficulty: "intermediate",
+    duration: "1 hour",
+    lab_url: "#",
+  },
+  {
+    id: "module-29-hw-security-platform",
+    title: "Hardware Security Platform",
+    description:
+      "Integrating PUF/HRoT, crypto accelerators, and a secure CPU into an isolated security subsystem, communicating with the Rich OS only via a hardware mailbox. Covers ARM PSA, OpenTitan, TPM 2.0.",
+    category: "hardware",
+    difficulty: "advanced",
+    duration: "1 hour",
+    lab_url: "#",
+  },
+  {
+    id: "module-30-key-gen-puf",
+    title: "Key Generation with PUF Solutions",
+    description:
+      "Fuzzy extractor Gen/Rep phases, multi-layer ECC (repetition + BCH/Reed-Muller), and privacy amplification for turning noisy PUF output into full-entropy cryptographic keys.",
+    category: "hardware",
+    difficulty: "intermediate",
+    duration: "1-1.5 hours",
+    lab_url: "#",
+  },
+  {
+    id: "module-31-hw-security-background",
+    title: "Background of Hardware Security",
+    description:
+      "The paradigm shift from software-only protection to hardware-rooted trust, the fabless supply chain's threat taxonomy (Trojans, side-channel, RE, counterfeiting), and Security-by-Design/PPAS.",
+    category: "fundamentals",
+    difficulty: "beginner",
+    duration: "1-1.5 hours",
+    lab_url: "#",
+  },
 ];
 
 export function useExperiments() {

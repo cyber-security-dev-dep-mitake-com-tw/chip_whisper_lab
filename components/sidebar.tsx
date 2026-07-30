@@ -2,19 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SUPPORTED_LOCALES, useLocale, useTranslations, type Locale } from "@/lib/i18n";
 
-const navItems = [
-  { href: "/", label: "Workbench", glyph: "⌁" },
-  { href: "/experiments", label: "Experiments", glyph: "▤" },
-  { href: "/traces", label: "Traces", glyph: "∿" },
-  { href: "/attacks", label: "Attacks", glyph: "⌗" },
-  { href: "/targets", label: "Targets", glyph: "⬡" },
-  { href: "/reports", label: "Reports", glyph: "◫" },
-  { href: "/learn", label: "Learn", glyph: "📖" },
-];
+const LOCALE_LABELS: Record<Locale, string> = {
+  en: "English",
+  "zh-TW": "繁體中文",
+};
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations();
+  const { locale, setLocale } = useLocale();
+
+  const navItems = [
+    { href: "/", label: t("sidebar.nav.workbench"), glyph: "⌁" },
+    { href: "/experiments", label: t("sidebar.nav.experiments"), glyph: "▤" },
+    { href: "/traces", label: t("sidebar.nav.traces"), glyph: "∿" },
+    { href: "/attacks", label: t("sidebar.nav.attacks"), glyph: "⌗" },
+    { href: "/targets", label: t("sidebar.nav.targets"), glyph: "⬡" },
+    { href: "/reports", label: t("sidebar.nav.reports"), glyph: "◫" },
+    { href: "/learn", label: t("sidebar.nav.learn"), glyph: "📖" },
+  ];
 
   return (
     <aside className="sidebar">
@@ -23,8 +31,8 @@ export function Sidebar() {
           CW
         </div>
         <div>
-          <strong>WhisperLab</strong>
-          <span>local control plane</span>
+          <strong>{t("sidebar.brandName")}</strong>
+          <span>{t("sidebar.brandTagline")}</span>
         </div>
       </div>
 
@@ -49,14 +57,53 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-spacer" />
+
+      <div className="locale-switcher" style={{ padding: "0 1rem 0.75rem" }}>
+        <label
+          htmlFor="locale-switcher-select"
+          style={{
+            display: "block",
+            fontSize: "10px",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: "var(--muted)",
+            marginBottom: "0.25rem",
+          }}
+        >
+          {t("sidebar.localeSwitcherLabel")}
+        </label>
+        <select
+          id="locale-switcher-select"
+          value={locale}
+          onChange={(e) => setLocale(e.target.value as Locale)}
+          aria-label={t("sidebar.localeSwitcherLabel")}
+          style={{
+            width: "100%",
+            background: "var(--panel, #111915)",
+            color: "var(--ink, #e5e5e5)",
+            border: "1px solid var(--line, #2a3a30)",
+            borderRadius: "6px",
+            padding: "0.35rem 0.5rem",
+            fontSize: "12px",
+            fontFamily: "inherit",
+          }}
+        >
+          {SUPPORTED_LOCALES.map((l) => (
+            <option key={l} value={l}>
+              {LOCALE_LABELS[l]}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="local-lock">
         <span className="status-dot safe" />
         <div>
-          <strong>Local only</strong>
-          <span>127.0.0.1 · no cloud USB</span>
+          <strong>{t("sidebar.localOnly")}</strong>
+          <span>{t("sidebar.localOnlySubtitle")}</span>
         </div>
       </div>
-      <p className="build-id">WHISPERLAB v0.1.0</p>
+      <p className="build-id">{t("sidebar.buildId")}</p>
     </aside>
   );
 }

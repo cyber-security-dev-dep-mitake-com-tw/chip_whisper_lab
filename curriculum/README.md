@@ -2,7 +2,7 @@
 
 ## Overview
 
-This curriculum covers 25 modules on hardware security, side-channel analysis, fault injection, and post-quantum cryptography. Each module includes theoretical background, simulated labs, and practical exercises using the ChipWhisper platform.
+This curriculum covers 32 modules on hardware security, side-channel analysis, fault injection, and post-quantum cryptography. Each module includes theoretical background, simulated labs, and practical exercises using the ChipWhisper platform.
 
 ## Module List
 
@@ -33,6 +33,13 @@ This curriculum covers 25 modules on hardware security, side-channel analysis, f
 | 22 | Quantum PUF | IBM Quantum integration, Qiskit, quantum PUF implementations | 4 hours | Module 04, Module 21 |
 | 23 | Cryo-CMOS & QPU | Cryogenic electronics, QPU security, quantum computing hardware | 3 hours | Module 22 |
 | 24 | BQC + TEE | Blind quantum computing, TEE integration, quantum-resistant systems | 4 hours | Module 17, Module 22 |
+| 25 | Quantum Tunneling PUF | Fowler-Nordheim tunneling, gate-oxide hard breakdown, zero-ECC PUF | 1-1.5 hours | Module 04 |
+| 26 | PUF-based Applications | Keyless storage, fuzzy extraction, anti-counterfeiting, key wrapping, onboarding | 1.5-2 hours | Module 04 |
+| 27 | PUF-based HRoT Architecture | PUF-driven secure boot, silicon lifecycle management, tamper resistance | 1.5-2 hours | Module 04, Module 05 |
+| 28 | eFuse vs. Anti-Fuse Storage | Electromigration vs. dielectric-breakdown OTP storage, RE resistance | 1 hour | Module 04 |
+| 29 | Hardware Security Platform | Secure subsystem architecture, hardware mailbox, ARM PSA, OpenTitan, TPM 2.0 | 1 hour | Module 27, Module 28 |
+| 30 | Key Generation with PUF | Fuzzy extractor Gen/Rep, ECC layering, privacy amplification | 1-1.5 hours | Module 04, Module 26 |
+| 31 | Background of Hardware Security | Fabless supply chain threats, Security-by-Design, PPAS, standards | 1-1.5 hours | Module 01 |
 
 ## Supplementary Resources
 

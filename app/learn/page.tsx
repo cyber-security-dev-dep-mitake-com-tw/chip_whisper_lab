@@ -28,6 +28,13 @@ const MODULES = [
   { id: "module-22-qpuf", title: "Quantum PUF (IBM Quantum)", category: "Quantum", difficulty: "Advanced", duration: "3 hours" },
   { id: "module-23-cryo-cmos", title: "Cryo-CMOS & QPU Security", category: "Quantum", difficulty: "Advanced", duration: "2 hours" },
   { id: "module-24-bqc-tee", title: "Blind Quantum Computing + TEE", category: "Quantum", difficulty: "Advanced", duration: "2 hours" },
+  { id: "module-25-quantum-tunneling-puf", title: "Quantum Tunneling PUF", category: "Hardware Trust", difficulty: "Advanced", duration: "1-1.5 hours" },
+  { id: "module-26-puf-applications", title: "PUF-based Applications", category: "Hardware Trust", difficulty: "Intermediate", duration: "1.5-2 hours" },
+  { id: "module-27-puf-hrot-architecture", title: "PUF-based Hardware Root of Trust Architecture", category: "Hardware Trust", difficulty: "Advanced", duration: "1.5-2 hours" },
+  { id: "module-28-efuse-antifuse", title: "eFuse vs. Anti-Fuse Storage", category: "Hardware Trust", difficulty: "Intermediate", duration: "1 hour" },
+  { id: "module-29-hw-security-platform", title: "Hardware Security Platform", category: "Hardware Trust", difficulty: "Advanced", duration: "1 hour" },
+  { id: "module-30-key-gen-puf", title: "Key Generation with PUF Solutions", category: "Hardware Trust", difficulty: "Intermediate", duration: "1-1.5 hours" },
+  { id: "module-31-hw-security-background", title: "Background of Hardware Security", category: "Theory", difficulty: "Beginner", duration: "1-1.5 hours" },
 ];
 
 export default function LearnPage() {
@@ -42,7 +49,7 @@ export default function LearnPage() {
           📚 Beginner Resources (EN/中文)
         </Link>
       </div>
-      <p className="text-gray-400 mb-6">25 modules covering all aspects of hardware security</p>
+      <p className="text-gray-400 mb-6">32 modules covering all aspects of hardware security</p>
 
       <div className="mb-6 flex gap-4">
         <select className="bg-gray-800 text-gray-200 border border-gray-600 rounded p-2">

@@ -1,0 +1,33 @@
+{
+  "sidebar": {
+    "brandName": "WhisperLab",
+    "brandTagline": "本地控制台",
+    "nav": {
+      "workbench": "工作台",
+      "experiments": "實驗",
+      "traces": "波形紀錄",
+      "attacks": "攻擊",
+      "targets": "目標裝置",
+      "reports": "報告",
+      "learn": "學習"
+    },
+    "localOnly": "僅限本機",
+    "localOnlySubtitle": "127.0.0.1 · 不經雲端 USB",
+    "buildId": "WHISPERLAB v0.1.0",
+    "localeSwitcherLabel": "語言"
+  },
+  "learnModule": {
+    "eyebrow": "模組",
+    "back": "← 返回",
+    "about": "關於",
+    "theory": "理論",
+    "furtherReading": "延伸閱讀",
+    "furtherReadingBody": "免費、適合初學者的 PDF 與論文（英文與中文），包含專屬的熵源／TRNG 閱讀清單。",
+    "furtherReadingLink": "初學者硬體安全資源 →",
+    "labNotebook": "實驗筆記本",
+    "labNotebookInteractive": "互動式實驗筆記本",
+    "labNotebookEmbed": "透過 iframe 嵌入的 Jupyter notebook",
+    "startExperiment": "開始實驗",
+    "viewSampleTraces": "查看範例波形"
+  }
+}

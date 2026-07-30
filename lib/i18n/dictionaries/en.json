@@ -1,0 +1,33 @@
+{
+  "sidebar": {
+    "brandName": "WhisperLab",
+    "brandTagline": "local control plane",
+    "nav": {
+      "workbench": "Workbench",
+      "experiments": "Experiments",
+      "traces": "Traces",
+      "attacks": "Attacks",
+      "targets": "Targets",
+      "reports": "Reports",
+      "learn": "Learn"
+    },
+    "localOnly": "Local only",
+    "localOnlySubtitle": "127.0.0.1 · no cloud USB",
+    "buildId": "WHISPERLAB v0.1.0",
+    "localeSwitcherLabel": "Language"
+  },
+  "learnModule": {
+    "eyebrow": "MODULE",
+    "back": "← Back",
+    "about": "About",
+    "theory": "Theory",
+    "furtherReading": "Further Reading",
+    "furtherReadingBody": "Free, beginner-level PDFs and papers (English + 中文), including a dedicated entropy-source / TRNG reading list.",
+    "furtherReadingLink": "Beginner Hardware Security Resources →",
+    "labNotebook": "Lab Notebook",
+    "labNotebookInteractive": "Interactive lab notebook",
+    "labNotebookEmbed": "Jupyter notebook embedded via iframe",
+    "startExperiment": "Start Experiment",
+    "viewSampleTraces": "View Sample Traces"
+  }
+}
