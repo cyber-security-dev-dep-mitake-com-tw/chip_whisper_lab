@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type NavKey = "workbench" | "install" | "capture" | "analysis" | "experiments";
 
@@ -118,6 +118,19 @@ function hashSeed(id: string): number {
 }
 
 export function ControlCenter() {
+  // Renders identically on server and first client paint (both false), so it
+  // never causes a hydration mismatch. A real click can otherwise land on a
+  // server-rendered button in the brief window before React finishes
+  // attaching event listeners — the browser accepts the click but nothing
+  // happens, since a bare <button> has no default action. This overlay
+  // absorbs that first click instead of silently swallowing it on the
+  // underlying (not-yet-interactive) control.
+  const [booted, setBooted] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBooted(true), 450);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const [active, setActive] = useState<NavKey>("workbench");
   const [simulation, setSimulation] = useState(true);
   const [installing, setInstalling] = useState(false);
@@ -205,7 +218,13 @@ export function ControlCenter() {
   }
 
   return (
-    <main className="lab-shell">
+    <>
+      {!booted && (
+        <div className="boot-gate" aria-hidden="true">
+          <div className="boot-gate-mark">CW</div>
+        </div>
+      )}
+      <main className="lab-shell">
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-mark" aria-hidden="true">
@@ -600,6 +619,7 @@ export function ControlCenter() {
           )}
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 }

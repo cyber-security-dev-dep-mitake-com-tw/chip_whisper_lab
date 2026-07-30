@@ -61,6 +61,40 @@ button {
   backdrop-filter: blur(18px);
 }
 
+.boot-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  background: #0a0f0d;
+  cursor: wait;
+}
+
+.boot-gate-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid #395044;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #26362e, #111915);
+  color: var(--green);
+  font: 700 13px/1 var(--mono);
+  letter-spacing: -0.04em;
+  animation: boot-pulse 900ms ease-in-out infinite;
+}
+
+@keyframes boot-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .brand {
   display: flex;
   align-items: center;
