@@ -81,7 +81,13 @@ export interface Module {
   id: string;
   title: string;
   description: string;
-  category: "fundamentals" | "attacks" | "hardware" | "advanced";
+  category:
+    | "fundamentals"
+    | "attacks"
+    | "hardware"
+    | "advanced"
+    | "compliance"
+    | "defense";
   difficulty: "beginner" | "intermediate" | "advanced";
   duration: string;
   lab_url?: string;

@@ -124,7 +124,9 @@ class BootChainPanel(QWidget):
         bootloader_image = b"bootloader-v1.0-image-bytes"
         expected_bootloader_sig = _sign(bootloader_image)
         actual_bootloader_image = (
-            bootloader_image + b"-TAMPERED" if self.tamper_bootloader.isChecked() else bootloader_image
+            bootloader_image + b"-TAMPERED"
+            if self.tamper_bootloader.isChecked()
+            else bootloader_image
         )
         bootloader_ok = hmac.compare_digest(
             _sign(actual_bootloader_image), expected_bootloader_sig

@@ -38,7 +38,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ..puf_core import FuzzyExtractor, HelperData, apply_noise, generate_puf_response
+from ..puf_core import FuzzyExtractor, apply_noise, generate_puf_response
 
 _EXPECTED_FIRMWARE_MEASUREMENT = b"firmware-v2.3-golden-hash"
 
