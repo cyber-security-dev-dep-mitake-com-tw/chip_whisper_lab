@@ -108,156 +108,198 @@ export function ControlCenter() {
         </header>
 
         <div className="content-grid">
-          <section className="hero-panel">
-            <div>
-              <p className="kicker">FIRST-RUN READINESS</p>
-              <h2>
-                Your Mac is ready.
-                <br />
-                The lab stack is not—yet.
-              </h2>
-              <p className="hero-copy">
-                A native-arm64 setup is planned. Nothing will modify Homebrew,
-                your shell, or connected hardware until you review the actions.
-              </p>
-            </div>
-            <div className="readiness-ring" aria-label={`${readiness} of 6 checks ready`}>
+          {(active === "workbench" || active === "install") && (
+            <section className="hero-panel">
               <div>
-                <strong>{readiness}/6</strong>
-                <span>checks ready</span>
+                <p className="kicker">FIRST-RUN READINESS</p>
+                <h2>
+                  Your Mac is ready.
+                  <br />
+                  The lab stack is not—yet.
+                </h2>
+                <p className="hero-copy">
+                  A native-arm64 setup is planned. Nothing will modify Homebrew,
+                  your shell, or connected hardware until you review the actions.
+                </p>
               </div>
-            </div>
-          </section>
-
-          <section className="card setup-card">
-            <div className="card-heading">
-              <div>
-                <p className="kicker">SYSTEM DOCTOR</p>
-                <h3>Native stack</h3>
-              </div>
-              <button
-                className="quiet-button"
-                onClick={() => setActive("install")}
-                type="button"
-              >
-                View report →
-              </button>
-            </div>
-            <div className="check-list">
-              {setupChecks.map((check) => (
-                <div className="check-row" key={check.label}>
-                  <span className={`check-icon ${check.state}`}>
-                    {check.state === "ready" ? "✓" : check.state === "optional" ? "·" : "!"}
-                  </span>
-                  <strong>{check.label}</strong>
-                  <span>{check.detail}</span>
+              <div className="readiness-ring" aria-label={`${readiness} of 6 checks ready`}>
+                <div>
+                  <strong>{readiness}/6</strong>
+                  <span>checks ready</span>
                 </div>
-              ))}
-            </div>
-            <button
-              className="primary-button"
-              disabled={installing}
-              onClick={startSafeInstall}
-              type="button"
-            >
-              {installing ? "Preparing dry-run report…" : "Preview safe install"}
-            </button>
-          </section>
-
-          <section className="card trace-card">
-            <div className="card-heading">
-              <div>
-                <p className="kicker">LIVE PREVIEW</p>
-                <h3>Power trace</h3>
               </div>
-              <span className="demo-pill">SIMULATED</span>
-            </div>
-            <div className="trace-plot" aria-label="Simulated power trace">
-              <div className="axis-label axis-y">ADC</div>
-              <div className="trace-bars">
-                {trace.map((value, index) => (
-                  <span
-                    key={`${index}-${value}`}
-                    style={{ height: `${value * 1.7}%` }}
-                  />
+            </section>
+          )}
+
+          {(active === "workbench" || active === "install") && (
+            <section className="card setup-card">
+              <div className="card-heading">
+                <div>
+                  <p className="kicker">SYSTEM DOCTOR</p>
+                  <h3>Native stack</h3>
+                </div>
+                <button
+                  className="quiet-button"
+                  onClick={() => setActive("install")}
+                  type="button"
+                >
+                  View report →
+                </button>
+              </div>
+              <div className="check-list">
+                {setupChecks.map((check) => (
+                  <div className="check-row" key={check.label}>
+                    <span className={`check-icon ${check.state}`}>
+                      {check.state === "ready" ? "✓" : check.state === "optional" ? "·" : "!"}
+                    </span>
+                    <strong>{check.label}</strong>
+                    <span>{check.detail}</span>
+                  </div>
                 ))}
               </div>
-              <div className="axis-label axis-x">5,000 samples · 7.37 MHz</div>
-            </div>
-            <div className="metric-row">
-              <div>
-                <span>Peak</span>
-                <strong>0.247</strong>
-              </div>
-              <div>
-                <span>Trigger</span>
-                <strong>1,842</strong>
-              </div>
-              <div>
-                <span>Noise</span>
-                <strong>18.3 mV</strong>
-              </div>
-            </div>
-          </section>
+              <button
+                className="primary-button"
+                disabled={installing}
+                onClick={startSafeInstall}
+                type="button"
+              >
+                {installing ? "Preparing dry-run report…" : "Preview safe install"}
+              </button>
+            </section>
+          )}
 
-          <section className="card control-card">
-            <div className="card-heading">
-              <div>
-                <p className="kicker">CAPTURE PROFILE</p>
-                <h3>SimpleSerial AES</h3>
+          {(active === "workbench" || active === "capture" || active === "analysis") && (
+            <section className="card trace-card">
+              <div className="card-heading">
+                <div>
+                  <p className="kicker">
+                    {active === "analysis" ? "ANALYSIS" : "LIVE PREVIEW"}
+                  </p>
+                  <h3>Power trace</h3>
+                </div>
+                <span className="demo-pill">SIMULATED</span>
               </div>
-              <span className="unsaved">NOT APPLIED</span>
-            </div>
-            <label className="range-field">
-              <span>
-                Samples <strong>{samples.toLocaleString()}</strong>
-              </span>
-              <input
-                max="20000"
-                min="1000"
-                onChange={(event) => setSamples(Number(event.target.value))}
-                step="500"
-                type="range"
-                value={samples}
-              />
-            </label>
-            <label className="range-field">
-              <span>
-                Gain <strong>{gain} dB</strong>
-              </span>
-              <input
-                max="56"
-                min="0"
-                onChange={(event) => setGain(Number(event.target.value))}
-                type="range"
-                value={gain}
-              />
-            </label>
-            <div className="select-row">
-              <label>
-                Clock
-                <select defaultValue="7.37 MHz">
-                  <option>7.37 MHz</option>
-                  <option>10 MHz</option>
-                  <option>20 MHz</option>
-                </select>
+              <div className="trace-plot" aria-label="Simulated power trace">
+                <div className="axis-label axis-y">ADC</div>
+                <div className="trace-bars">
+                  {trace.map((value, index) => (
+                    <span
+                      key={`${index}-${value}`}
+                      style={{ height: `${value * 1.7}%` }}
+                    />
+                  ))}
+                </div>
+                <div className="axis-label axis-x">5,000 samples · 7.37 MHz</div>
+              </div>
+              <div className="metric-row">
+                <div>
+                  <span>Peak</span>
+                  <strong>0.247</strong>
+                </div>
+                <div>
+                  <span>Trigger</span>
+                  <strong>1,842</strong>
+                </div>
+                <div>
+                  <span>Noise</span>
+                  <strong>18.3 mV</strong>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {active === "analysis" && (
+            <section className="card control-card">
+              <div className="card-heading">
+                <div>
+                  <p className="kicker">LEAKAGE ANALYSIS</p>
+                  <h3>Correlation vs. key guess</h3>
+                </div>
+                <span className="unsaved">NO EXPERIMENT LOADED</span>
+              </div>
+              <p className="safety-note">
+                Run a capture from the Capture tab, or open a saved experiment
+                from Experiments, to compute CPA/DPA correlation traces here.
+              </p>
+            </section>
+          )}
+
+          {(active === "workbench" || active === "capture") && (
+            <section className="card control-card">
+              <div className="card-heading">
+                <div>
+                  <p className="kicker">CAPTURE PROFILE</p>
+                  <h3>SimpleSerial AES</h3>
+                </div>
+                <span className="unsaved">NOT APPLIED</span>
+              </div>
+              <label className="range-field">
+                <span>
+                  Samples <strong>{samples.toLocaleString()}</strong>
+                </span>
+                <input
+                  max="20000"
+                  min="1000"
+                  onChange={(event) => setSamples(Number(event.target.value))}
+                  step="500"
+                  type="range"
+                  value={samples}
+                />
               </label>
-              <label>
-                Trigger
-                <select defaultValue="rising edge">
-                  <option>rising edge</option>
-                  <option>falling edge</option>
-                </select>
+              <label className="range-field">
+                <span>
+                  Gain <strong>{gain} dB</strong>
+                </span>
+                <input
+                  max="56"
+                  min="0"
+                  onChange={(event) => setGain(Number(event.target.value))}
+                  type="range"
+                  value={gain}
+                />
               </label>
-            </div>
-            <button className="capture-button" type="button">
-              <span>●</span> Capture one trace
-            </button>
-            <p className="safety-note">
-              Simulator data only. Hardware controls remain locked until setup
-              and device confirmation pass.
-            </p>
-          </section>
+              <div className="select-row">
+                <label>
+                  Clock
+                  <select defaultValue="7.37 MHz">
+                    <option>7.37 MHz</option>
+                    <option>10 MHz</option>
+                    <option>20 MHz</option>
+                  </select>
+                </label>
+                <label>
+                  Trigger
+                  <select defaultValue="rising edge">
+                    <option>rising edge</option>
+                    <option>falling edge</option>
+                  </select>
+                </label>
+              </div>
+              <button className="capture-button" type="button">
+                <span>●</span> Capture one trace
+              </button>
+              <p className="safety-note">
+                Simulator data only. Hardware controls remain locked until setup
+                and device confirmation pass.
+              </p>
+            </section>
+          )}
+
+          {active === "experiments" && (
+            <section className="card control-card">
+              <div className="card-heading">
+                <div>
+                  <p className="kicker">EXPERIMENTS</p>
+                  <h3>Saved captures</h3>
+                </div>
+                <span className="unsaved">0 SAVED</span>
+              </div>
+              <p className="safety-note">
+                No experiments saved yet. Capture a trace from the Capture tab
+                and save it to build a comparable experiment history here.
+              </p>
+            </section>
+          )}
         </div>
       </section>
     </main>
