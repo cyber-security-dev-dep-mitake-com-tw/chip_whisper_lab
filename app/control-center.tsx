@@ -30,20 +30,82 @@ const simulatedSetupChecks = [
   { label: "ARM toolchain", detail: "Not installed", state: "optional" },
 ];
 
-const trace = [
-  14, 17, 13, 19, 16, 22, 15, 18, 21, 16, 27, 12, 31, 20, 15, 25, 18, 23,
-  39, 18, 15, 32, 21, 16, 28, 13, 44, 19, 24, 16, 33, 22, 17, 29, 14, 37,
-  20, 25, 16, 31, 19, 23, 15, 27, 18, 21, 16, 24,
+type ChipProfile = {
+  id: string;
+  name: string;
+  arch: string;
+  target: string;
+  clock: string;
+  protocol: string;
+  peak: number;
+  trigger: number;
+  noise: number;
+  samples: number;
+  seed: number;
+};
+
+const chipProfiles: ChipProfile[] = [
+  { id: "xmega128d4", name: "XMEGA128D4", arch: "AVR (8-bit)", target: "CW303", clock: "7.37 MHz", protocol: "SimpleSerial AES", peak: 0.247, trigger: 1842, noise: 18.3, samples: 5000, seed: 11 },
+  { id: "atmega328p", name: "ATmega328P", arch: "AVR (8-bit)", target: "CW-Lite Arduino", clock: "16 MHz", protocol: "SimpleSerial AES", peak: 0.312, trigger: 2010, noise: 21.1, samples: 5000, seed: 23 },
+  { id: "attiny85", name: "ATtiny85", arch: "AVR (8-bit)", target: "Custom UFO", clock: "8 MHz", protocol: "SimpleSerial XOR", peak: 0.198, trigger: 980, noise: 26.4, samples: 3000, seed: 37 },
+  { id: "stm32f303", name: "STM32F303RCT6", arch: "ARM Cortex-M4", target: "CW308T-STM32F3", clock: "24 MHz", protocol: "SimpleSerial AES", peak: 0.156, trigger: 3210, noise: 12.7, samples: 5000, seed: 41 },
+  { id: "stm32f415", name: "STM32F415RGT6", arch: "ARM Cortex-M4", target: "CW308T-STM32F4", clock: "24 MHz", protocol: "SimpleSerial RSA", peak: 0.171, trigger: 4055, noise: 14.9, samples: 24000, seed: 53 },
+  { id: "stm32l051", name: "STM32L051K8", arch: "ARM Cortex-M0+", target: "CW308T-STM32L0", clock: "16 MHz", protocol: "SimpleSerial AES", peak: 0.134, trigger: 2760, noise: 10.2, samples: 5000, seed: 61 },
+  { id: "sam3u", name: "SAM3U1C", arch: "ARM Cortex-M3", target: "CW308T-SAM3U", clock: "12 MHz", protocol: "SimpleSerial AES", peak: 0.189, trigger: 3390, noise: 15.6, samples: 5000, seed: 67 },
+  { id: "k82f", name: "MK82FN256", arch: "ARM Cortex-M4F", target: "CW308T-K82F", clock: "24 MHz", protocol: "SimpleSerial ECC", peak: 0.203, trigger: 4890, noise: 16.8, samples: 10000, seed: 71 },
+  { id: "nrf52840", name: "nRF52840", arch: "ARM Cortex-M4F", target: "CW308T-NRF52840", clock: "16 MHz", protocol: "SimpleSerial AES + BLE", peak: 0.221, trigger: 3120, noise: 19.5, samples: 5000, seed: 79 },
+  { id: "cc2538", name: "CC2538SF53", arch: "ARM Cortex-M3", target: "CW308T-CC2538", clock: "32 MHz", protocol: "SimpleSerial AES", peak: 0.177, trigger: 3630, noise: 13.4, samples: 5000, seed: 83 },
+  { id: "rp2040", name: "RP2040", arch: "ARM Cortex-M0+ (dual)", target: "Custom Pico target", clock: "12 MHz", protocol: "SimpleSerial AES", peak: 0.162, trigger: 2980, noise: 11.9, samples: 5000, seed: 89 },
+  { id: "esp32", name: "ESP32-WROOM-32", arch: "Xtensa LX6", target: "Custom WiFi target", clock: "40 MHz", protocol: "SimpleSerial AES", peak: 0.288, trigger: 5210, noise: 24.6, samples: 10000, seed: 97 },
+  { id: "esp8266", name: "ESP8266EX", arch: "Xtensa LX106", target: "Custom WiFi target", clock: "26 MHz", protocol: "SimpleSerial AES", peak: 0.264, trigger: 4780, noise: 23.1, samples: 8000, seed: 101 },
+  { id: "gd32vf103", name: "GD32VF103CBT6", arch: "RISC-V (RV32IMAC)", target: "CW308T-GD32VF103", clock: "8 MHz", protocol: "SimpleSerial AES", peak: 0.145, trigger: 2455, noise: 12.0, samples: 5000, seed: 103 },
+  { id: "fe310", name: "SiFive FE310", arch: "RISC-V (RV32IMAC)", target: "HiFive1 target", clock: "16 MHz", protocol: "SimpleSerial AES", peak: 0.151, trigger: 2690, noise: 12.9, samples: 5000, seed: 107 },
+  { id: "msp430fr", name: "MSP430FR5969", arch: "MSP430 (16-bit)", target: "CW308T-MSP430FR", clock: "8 MHz", protocol: "SimpleSerial AES", peak: 0.121, trigger: 1690, noise: 9.6, samples: 5000, seed: 109 },
+  { id: "pic24fj", name: "PIC24FJ128GA010", arch: "PIC24 (16-bit)", target: "Custom PIC target", clock: "8 MHz", protocol: "SimpleSerial AES", peak: 0.213, trigger: 2245, noise: 17.7, samples: 5000, seed: 113 },
+  { id: "pic18f", name: "PIC18F4550", arch: "PIC18 (8-bit)", target: "Custom PIC target", clock: "20 MHz", protocol: "SimpleSerial XOR", peak: 0.229, trigger: 1975, noise: 20.3, samples: 4000, seed: 127 },
+  { id: "atmega128rfa1", name: "ATmega128RFA1", arch: "AVR (8-bit) + 802.15.4", target: "Custom Zigbee target", clock: "16 MHz", protocol: "SimpleSerial AES", peak: 0.256, trigger: 2130, noise: 22.0, samples: 5000, seed: 131 },
+  { id: "efm32gg", name: "EFM32GG11", arch: "ARM Cortex-M4F", target: "CW308T-EFM32GG11", clock: "24 MHz", protocol: "SimpleSerial AES", peak: 0.168, trigger: 3480, noise: 14.1, samples: 5000, seed: 137 },
 ];
+
+function generateTrace(chip: ChipProfile, bars = 48): number[] {
+  let state = chip.seed;
+  const next = () => {
+    // Deterministic LCG so the same chip always renders the same trace shape.
+    state = (state * 1103515245 + 12345) & 0x7fffffff;
+    return state / 0x7fffffff;
+  };
+  const base = chip.peak * 100;
+  return Array.from({ length: bars }, () => {
+    const jitter = (next() - 0.5) * base * 0.9;
+    return Math.max(6, Math.round(base * 0.6 + jitter));
+  });
+}
 
 export function ControlCenter() {
   const [active, setActive] = useState<NavKey>("workbench");
   const [simulation, setSimulation] = useState(true);
   const [installing, setInstalling] = useState(false);
-  const [samples, setSamples] = useState(5000);
+  const [chipId, setChipId] = useState(chipProfiles[0].id);
   const [gain, setGain] = useState(22);
 
-  const setupChecks = simulation ? simulatedSetupChecks : hardwareSetupChecks;
+  const chip = chipProfiles.find((item) => item.id === chipId) ?? chipProfiles[0];
+  const [samples, setSamples] = useState(chip.samples);
+  const trace = useMemo(() => generateTrace(chip), [chip]);
+
+  const setupChecks = useMemo(() => {
+    if (!simulation) return hardwareSetupChecks;
+    return simulatedSetupChecks.map((check) =>
+      check.label === "ChipWhisperer"
+        ? { ...check, detail: `Simulated · ${chip.name} (${chip.target})` }
+        : check,
+    );
+  }, [simulation, chip]);
+
+  function selectChip(nextId: string) {
+    setChipId(nextId);
+    const nextChip = chipProfiles.find((item) => item.id === nextId);
+    if (nextChip) setSamples(nextChip.samples);
+  }
 
   const readiness = useMemo(
     () => setupChecks.filter((item) => item.state === "ready").length,
@@ -111,10 +173,27 @@ export function ControlCenter() {
                 <span />
               </span>
             </label>
-            <button className="device-button" type="button">
-              <span className={simulation ? "status-dot safe" : "status-dot"} />
-              {simulation ? "Demo device" : "Scan USB"}
-            </button>
+            {simulation ? (
+              <label className="device-button chip-picker">
+                <span className="status-dot safe" />
+                <select
+                  aria-label="Simulated target chip"
+                  onChange={(event) => selectChip(event.target.value)}
+                  value={chipId}
+                >
+                  {chipProfiles.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <button className="device-button" type="button">
+                <span className="status-dot" />
+                Scan USB
+              </button>
+            )}
           </div>
         </header>
 
@@ -186,11 +265,11 @@ export function ControlCenter() {
                   <p className="kicker">
                     {active === "analysis" ? "ANALYSIS" : "LIVE PREVIEW"}
                   </p>
-                  <h3>Power trace</h3>
+                  <h3>{chip.name} power trace</h3>
                 </div>
                 <span className="demo-pill">SIMULATED</span>
               </div>
-              <div className="trace-plot" aria-label="Simulated power trace">
+              <div className="trace-plot" aria-label={`Simulated power trace for ${chip.name}`}>
                 <div className="axis-label axis-y">ADC</div>
                 <div className="trace-bars">
                   {trace.map((value, index) => (
@@ -200,20 +279,22 @@ export function ControlCenter() {
                     />
                   ))}
                 </div>
-                <div className="axis-label axis-x">5,000 samples · 7.37 MHz</div>
+                <div className="axis-label axis-x">
+                  {samples.toLocaleString()} samples · {chip.clock}
+                </div>
               </div>
               <div className="metric-row">
                 <div>
                   <span>Peak</span>
-                  <strong>0.247</strong>
+                  <strong>{chip.peak.toFixed(3)}</strong>
                 </div>
                 <div>
                   <span>Trigger</span>
-                  <strong>1,842</strong>
+                  <strong>{chip.trigger.toLocaleString()}</strong>
                 </div>
                 <div>
                   <span>Noise</span>
-                  <strong>18.3 mV</strong>
+                  <strong>{chip.noise.toFixed(1)} mV</strong>
                 </div>
               </div>
             </section>
@@ -240,7 +321,10 @@ export function ControlCenter() {
               <div className="card-heading">
                 <div>
                   <p className="kicker">CAPTURE PROFILE</p>
-                  <h3>SimpleSerial AES</h3>
+                  <h3>{chip.protocol}</h3>
+                  <p className="chip-subline">
+                    {chip.name} · {chip.arch} · {chip.target}
+                  </p>
                 </div>
                 <span className="unsaved">NOT APPLIED</span>
               </div>
@@ -249,7 +333,7 @@ export function ControlCenter() {
                   Samples <strong>{samples.toLocaleString()}</strong>
                 </span>
                 <input
-                  max="20000"
+                  max="30000"
                   min="1000"
                   onChange={(event) => setSamples(Number(event.target.value))}
                   step="500"
@@ -272,10 +356,8 @@ export function ControlCenter() {
               <div className="select-row">
                 <label>
                   Clock
-                  <select defaultValue="7.37 MHz">
-                    <option>7.37 MHz</option>
-                    <option>10 MHz</option>
-                    <option>20 MHz</option>
+                  <select disabled value={chip.clock}>
+                    <option>{chip.clock}</option>
                   </select>
                 </label>
                 <label>

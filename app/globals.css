@@ -267,6 +267,25 @@ button {
   cursor: pointer;
 }
 
+.chip-picker select {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  max-width: 220px;
+}
+
+.chip-picker select:focus {
+  outline: none;
+}
+
+.chip-subline {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font: 11px/1.3 var(--mono);
+}
+
 .status-dot {
   width: 7px;
   height: 7px;
