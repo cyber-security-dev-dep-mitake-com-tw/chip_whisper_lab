@@ -1,6 +1,4 @@
-這是一份為您撰寫的課程教材。本篇針對「Ch2 Hardware Root of Trust」的第八節內容進行專業且嚴謹的論述。
 
----
 
 ## Ch2 Hardware Root of Trust (硬體信任根)
 
@@ -48,3 +46,52 @@
 1. **NIST SP 800-193** - *Platform Firmware Resiliency Guidelines*. (美國國家標準暨技術研究院針對平台韌體彈性與硬體信任根在安全啟動（Secure Boot）中扮演之角色的核心指引)。
 2. **Arm Platform Security Architecture (PSA)** - *PSA Certified Root of Trust Security Requirements*. (定義了晶片級別安全隔離與硬體信任根防護邊界（Security Boundary）的業界標準架構)。
 3. **Trusted Computing Group (TCG)** - *DICE (Device Identifier Composition Engine) Specification*. (探討如何利用硬體唯一機密（如 PUF HUK）來建構分層的信任與安全啟動鏈的標準協定)。
+
+
+---
+
+## Ch2 Hardware Root of Trust (硬體信任根)
+
+### 單元 2.9：PUF-based Hardware Root of Trust (2) (基於 PUF 的硬體信任根架構 - 生命週期與進階防護)
+
+#### 1. 晶片安全生命週期管理 (Silicon Lifecycle Management)
+
+基於 PUF 的硬體信任根（HRoT）不僅僅在系統啟動（Boot）時發揮作用，它更涵蓋了晶片從製造、佈建、營運到報廢的完整生命週期管理。
+
+* **初始註冊與佈建 (Enrollment & Provisioning)：**
+傳統金鑰需要在受信任的無塵室環境中進行實體燒錄（Key Injection），這在複雜的全球供應鏈中極易成為安全漏洞。而在 PUF HRoT 架構中，製造商只需在安全的測試機台上進行一次「讀取」——提取出 PUF 的輔助資料（Helper Data）並生成公鑰（Public Key），私鑰則由晶片內部動態生成。這大幅降低了供應鏈被內鬼或外部攻擊者竊取靜態金鑰的風險。
+* **安全遠端更新 (Secure Over-The-Air, OTA Updates)：**
+當設備在現場（In-field）運行時，若發現韌體漏洞，必須進行 OTA 更新。HRoT 會利用 PUF 衍生出的更新金鑰，驗證新版韌體映像檔的數位簽章，並在內部安全記憶體中進行解密，確保設備不會被降級攻擊（Downgrade Attack）或植入惡意韌體。
+* **生命週期終止與金鑰撤銷 (End-of-Life & Key Revocation)：**
+當設備報廢或遭到嚴重攻破時，由於 PUF 的物理特徵無法被抹除，系統可透過抹除儲存區中的「輔助資料」或更改金鑰推導函數（KDF）的上下文參數（Context），使得原始的 PUF 輸出再也無法還原出先前的根金鑰，達到實質上的金鑰撤銷與設備註銷。
+
+#### 2. 進階實體攻擊防護 (Advanced Physical Attack Resistance)
+
+高階的 HRoT 必須通過嚴格的硬體安全認證（如 FIPS 140-3 Level 3/4 或 CC EAL 4+ 以上）。基於 PUF 的設計在面對實體攻擊時具有先天優勢，但仍需搭配防篡改電路：
+
+* **旁路攻擊（Side-Channel Attacks, SCA）：**
+攻擊者會透過測量晶片運算時的功耗（DPA）或電磁輻射（EMA）來反推金鑰。HRoT 內部的密碼學引擎與 PUF 讀取電路必須採用遮蔽（Masking）**與**隱藏（Hiding）技術，在運算過程中加入隨機亂數干擾，打破功耗與金鑰資料之間的關聯性。
+* **錯誤注入攻擊（Fault Injection, FI）：**
+攻擊者利用雷射、電壓突波（Voltage Glitching）或時脈毛刺（Clock Glitching）精準干擾 CPU，企圖讓安全啟動過程中的「驗證跳轉指令（如 `if (signature_valid)`）」發生位元反轉，進而繞過安全檢查。HRoT 的狀態機必須設計冗餘邏輯（Redundant Logic），並在晶片層級佈署電壓/頻率異常偵測器（Glitch Detectors）。
+* **動態篡改響應（Active Tamper Response）：**
+一旦感測器偵測到物理入侵，HRoT 會立即切斷 PUF 電路的供電或重置輔助資料暫存器。因為 PUF 是「動態生成金鑰」，只要切斷電源，金鑰便瞬間化為烏有（Zeroization），攻擊者無法從靜態記憶體中挖出任何機密。
+
+#### 3. 與可信執行環境的協同運作 (Integration with TEE)
+
+硬體信任根是底層的基石，而可信執行環境（Trusted Execution Environment, TEE，例如 ARM TrustZone 或 RISC-V PMP）則是建立在其上的系統架構。
+
+* **信任鏈的延伸：** HRoT 在完成最底層的硬體與 Bootloader 驗證後，會將執行權限移交給 TEE 中的安全作業系統（Secure OS，如 OP-TEE）。
+* **金鑰的隔離配發：** HRoT 會利用 PUF 為 TEE 衍生出專屬的加密金鑰，確保 TEE 內部運行的安全應用程式（Trusted Applications, TAs，如行動支付、生物辨識）具備絕對獨立的安全儲存空間，即使外部的 Rich OS（如 Android/Linux）遭到完全控制，也無法讀取 TEE 的機密。
+
+#### 4. 第二章總結：邁向零信任的硬體基礎
+
+總結「Ch2 Hardware Root of Trust」的內容：在現代 IC 設計中，安全不能僅依賴軟體層面的修補。PUF 提供了不可複製的物理熵源，而 HRoT 將這個熵源轉化為系統的信任錨點。這種「從矽晶片底層建立信任（Silicon-to-Cloud Trust）」的架構，正是實現現代零信任架構（Zero Trust Architecture）不可或缺的硬體基礎。
+
+---
+
+### 參考資料 (References & Sources)
+
+1. **FIPS 140-3** - *Security Requirements for Cryptographic Modules*. National Institute of Standards and Technology (NIST). (定義了密碼學模組在面臨實體篡改與旁路攻擊時的防護標準與金鑰銷毀機制)。
+2. **GlobalPlatform** - *TEE System Architecture*. (詳細定義了硬體信任根如何與可信執行環境 TEE 進行金鑰派發與權限隔離的國際標準規範)。
+3. **Rostami, M., Koushanfar, F., & Karri, R. (2014).** *A Primer on Hardware Security: Models, Methods, and Metrics*. Proceedings of the IEEE. (涵蓋了晶片生命週期管理、硬體木馬防禦及信任根架構設計的學術綜述)。
+
