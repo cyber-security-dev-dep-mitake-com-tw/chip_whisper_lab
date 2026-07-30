@@ -12,12 +12,21 @@ const navigation: { key: NavKey; label: string; glyph: string }[] = [
   { key: "experiments", label: "Experiments", glyph: "▤" },
 ];
 
-const setupChecks = [
+const hardwareSetupChecks = [
   { label: "Apple Silicon", detail: "arm64 · native", state: "ready" },
   { label: "Homebrew", detail: "/opt/homebrew", state: "ready" },
   { label: "libusb", detail: "Not installed", state: "missing" },
   { label: "Python lab", detail: "3.12 requested", state: "missing" },
   { label: "ChipWhisperer", detail: "Not installed", state: "missing" },
+  { label: "ARM toolchain", detail: "Not installed", state: "optional" },
+];
+
+const simulatedSetupChecks = [
+  { label: "Apple Silicon", detail: "arm64 · native", state: "ready" },
+  { label: "Homebrew", detail: "/opt/homebrew", state: "ready" },
+  { label: "libusb", detail: "Simulated · no device I/O", state: "ready" },
+  { label: "Python lab", detail: "Simulated · 3.12", state: "ready" },
+  { label: "ChipWhisperer", detail: "Simulated · demo device", state: "ready" },
   { label: "ARM toolchain", detail: "Not installed", state: "optional" },
 ];
 
@@ -34,9 +43,11 @@ export function ControlCenter() {
   const [samples, setSamples] = useState(5000);
   const [gain, setGain] = useState(22);
 
+  const setupChecks = simulation ? simulatedSetupChecks : hardwareSetupChecks;
+
   const readiness = useMemo(
     () => setupChecks.filter((item) => item.state === "ready").length,
-    [],
+    [setupChecks],
   );
 
   function startSafeInstall() {
