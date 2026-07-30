@@ -44,3 +44,4 @@ next-env.d.ts
 /work/
 .vendor/chipwhisperer/
 .ignore.txt
+/docs/references/images
